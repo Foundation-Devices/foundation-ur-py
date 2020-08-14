@@ -15,8 +15,11 @@ def data_to_hex(buf):
 def int_to_bytes(n):
     return n.to_bytes((n.bit_length() + 7) // 8, 'big')
 
-def int_from_bytes(n_bytes):
-    return int.from_bytes(n_bytes, 'big')
+def bytes_to_int(buf):
+    return int.from_bytes(buf, 'big')
+
+def string_to_bytes(s):
+    return bytes(s, 'utf8')
 
 def is_ur_type(ch):
     if 'a' <= ch and ch <= 'z':
