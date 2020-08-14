@@ -1,5 +1,4 @@
 # CRC32 functions
-import struct
 
 TABLE = None
 def crc32(buf):
@@ -22,4 +21,5 @@ def crc32(buf):
     return 0xffffffff & ~crc
 
 def crc32n(buf):
-    return struct.pack('l', crc32(buf))
+    n = crc32(buf)
+    return n.to_bytes((n.bit_length() + 7) // 8, 'big')

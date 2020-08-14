@@ -18,26 +18,29 @@ class TestUR(unittest.TestCase):
         assert check_crc32("Hello, world!", "ebe6c6e6")
         assert check_crc32("Wolf", "598c84dc")
 
+    def test_bytewords_1(self):
+        input = bytes([0, 1, 2, 128, 255])
+        assert(Bytewords.encode(Bytewords.Style.standard, input) == "able acid also lava zero jade need echo taxi")
+        assert(Bytewords.encode(Bytewords.Style.uri, input) == "able-acid-also-lava-zero-jade-need-echo-taxi")
+        assert(Bytewords.encode(Bytewords.Style.minimal, input) == "aeadaolazojendeoti")
 
-# static void test_bytewords_1() {
-#     ByteVector input = {0, 1, 2, 128, 255};
-#     assert(Bytewords::encode(Bytewords::style::standard, input) == "able acid also lava zero jade need echo taxi");
-#     assert(Bytewords::encode(Bytewords::style::uri, input) == "able-acid-also-lava-zero-jade-need-echo-taxi");
-#     assert(Bytewords::encode(Bytewords::style::minimal, input) == "aeadaolazojendeoti");
+        assert(Bytewords.decode(Bytewords.Style.standard, "able acid also lava zero jade need echo taxi") == input)
+        assert(Bytewords.decode(Bytewords.Style.uri, "able-acid-also-lava-zero-jade-need-echo-taxi") == input)
+        assert(Bytewords.decode(Bytewords.Style.minimal, "aeadaolazojendeoti") == input)
 
-#     assert(Bytewords::decode(Bytewords::style::standard, "able acid also lava zero jade need echo taxi") == input);
-#     assert(Bytewords::decode(Bytewords::style::uri, "able-acid-also-lava-zero-jade-need-echo-taxi") == input);
-#     assert(Bytewords::decode(Bytewords::style::minimal, "aeadaolazojendeoti") == input);
+        # bad checksum
+        with self.assertRaises(ValueError):
+            Bytewords.decode(Bytewords.Style.standard, "able acid also lava zero jade need echo wolf")
+        with self.assertRaises(ValueError):
+            Bytewords.decode(Bytewords.Style.uri, "able-acid-also-lava-zero-jade-need-echo-wolf")
+        with self.assertRaises(ValueError):
+            Bytewords.decode(Bytewords.Style.minimal, "aeadaolazojendeowf")
 
-#     // bad checksum
-#     assert_throws(Bytewords::decode(Bytewords::style::standard, "able acid also lava zero jade need echo wolf"));
-#     assert_throws(Bytewords::decode(Bytewords::style::uri, "able-acid-also-lava-zero-jade-need-echo-wolf"));
-#     assert_throws(Bytewords::decode(Bytewords::style::minimal, "aeadaolazojendeowf"));
-
-#     // too short
-#     assert_throws(Bytewords::decode(Bytewords::style::standard, "wolf"));
-#     assert_throws(Bytewords::decode(Bytewords::style::standard, ""));
-# }
+        # too short
+        with self.assertRaises(ValueError):
+            Bytewords.decode(Bytewords.Style.standard, "wolf")
+        with self.assertRaises(ValueError):
+            Bytewords.decode(Bytewords.Style.standard, "")
 
 # static void test_bytewords_2() {
 #     ByteVector input = {

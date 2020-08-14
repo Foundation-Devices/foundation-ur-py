@@ -28,4 +28,4 @@ def is_ur_type(ch):
     return False
 
 def partition(s, n):
-    return [s[i:i+n] for i in range(len(s), n)]
+    return [s[i:i+n] for i in range(0, len(s), n)]
