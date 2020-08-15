@@ -1,4 +1,8 @@
-# CRC32 functions
+#
+# crc32.py
+#
+# Copyright © 2020 by Foundation Devices Inc.
+#
 
 TABLE = None
 def crc32(buf):

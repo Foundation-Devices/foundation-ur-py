@@ -1,4 +1,8 @@
-# 
+#
+# xoshiro256.py
+#
+# Copyright © 2020 by Foundation Devices Inc.
+#
 
 import struct
 import hashlib
@@ -49,15 +53,12 @@ class Xoshiro256:
             for n in range(8):
                 v <<= 8
                 v |= (arr[o + n])
-            print('setting s[{}] to {}'.format(i, v))
             self.s[i] = v
-
 
     def _hash_then_set_s(self, buf):
         m = hashlib.sha256()
         m.update(buf)
         digest = m.digest()
-        print('digest={}'.format(digest))
         self._set_s(digest)
 
     @classmethod
@@ -83,14 +84,11 @@ class Xoshiro256:
     def from_string(cls, s):
         x = Xoshiro256()
         buf = string_to_bytes(s)
-        print('buf={}'.format(buf))
         x._hash_then_set_s(buf)
         return x
 
     def next(self):
-        # print('s = {}'.format(self.s))
         result = (rotl((self.s[1] * 5) & MAX_UINT64, 7) * 9) & MAX_UINT64
-        print('result={}'.format(result))
         t = (self.s[1] << 17) & MAX_UINT64
 
         self.s[2] ^= self.s[0]
@@ -102,8 +100,6 @@ class Xoshiro256:
 
         self.s[3] = rotl(self.s[3], 45) & MAX_UINT64
 
-        for i in range(4):
-            print('s[{}] = {}'.format(i, self.s[i]))
         return result
 
     def next_double(self):

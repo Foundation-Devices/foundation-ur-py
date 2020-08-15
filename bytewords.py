@@ -1,4 +1,8 @@
-# Bytewords implementation
+#
+# bytewords.py
+#
+# Copyright © 2020 by Foundation Devices Inc.
+#
 
 from enum import Enum
 from utils import crc32_bytes, partition

@@ -1,4 +1,8 @@
-# Copyright here
+#
+# utils.py
+#
+# Copyright © 2020 by Foundation Devices Inc.
+#
 
 from crc32 import crc32, crc32n
 
