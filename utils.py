@@ -36,3 +36,9 @@ def is_ur_type(ch):
 
 def partition(s, n):
     return [s[i:i+n] for i in range(0, len(s), n)]
+
+# Split the given sequence into two parts returned in a tuple
+# The first entry in the tuple has the first `count` values.
+# The second entry in the tuple has the remaining values.
+def split(buf, count):
+    return (buf[0:count], buf[count:])

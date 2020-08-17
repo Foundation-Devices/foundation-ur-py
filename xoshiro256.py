@@ -118,6 +118,7 @@ class Xoshiro256:
         result = bytearray()
         for i in range(count):
             result.append(self.next_byte())
+        return result
 
     def jump(self):
         global JUMP
