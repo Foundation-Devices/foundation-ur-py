@@ -36,7 +36,6 @@ def choose_fragments(seq_num, seq_len, checksum):
         return set([seq_num - 1]) #  set<size_t>({seq_num - 1}); ???
     else:
         seed = int_to_bytes(seq_num) + int_to_bytes(checksum)
-        print('seed={}'.format(seed))
         rng = Xoshiro256.from_bytes(seed)
         degree = choose_degree(seq_len, rng)
         indexes = []
@@ -44,6 +43,4 @@ def choose_fragments(seq_num, seq_len, checksum):
         for i in range(seq_len):
             indexes.append(i)
         shuffled_indexes = shuffled(indexes, rng)
-        print('indexes={} shuffled={}'.format(indexes, shuffled_indexes))
-
         return set(shuffled_indexes[0:degree])

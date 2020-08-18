@@ -105,7 +105,6 @@ class Xoshiro256:
     def next_double(self):
         m = float(0xffffffffffffffff) + 1
         nxt = self.next()
-        # print("next={} m={}".format(nxt, m))
         return nxt / m
 
     def next_int(self, low, high):
