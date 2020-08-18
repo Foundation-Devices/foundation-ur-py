@@ -43,3 +43,15 @@ def partition(s, n):
 # The second entry in the tuple has the remaining values.
 def split(buf, count):
     return (buf[0:count], buf[count:])
+
+
+def xor_into(target, source):
+    count = len(target)
+    assert(count == len(source)) # Must be the same length
+    for i in range(count):
+        target[i] ^= source[i]
+
+def xor_with(a, b):
+    target = a
+    xor_into(target, b)
+    return target

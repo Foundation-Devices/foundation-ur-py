@@ -4,75 +4,89 @@
 # Copyright © 2020 by Foundation Devices Inc.
 #
 
+from cbor_lite import CBOREncoder
+
+from fountain_utils import choose_fragments
 import math
-from utils import split
+from utils import split, crc32_int, xor_into, data_to_hex
 
 import cbor_lite
 
-class FountainEncoder:
-    class Part:
-        class InvalidHeader(Exception):
-            pass
-
-        # (uint32_t seq_num, size_t seq_len, size_t message_len, uint32_t checksum, const ByteVector& data) 
-        def __init__(self, seq_num, seq_len, message_len, checksum, data):
-            self.seq_num = seq_num
-            self.seq_len = seq_len
-            self.message_len = message_len
-            self.checksum = checksum
-            self.data = data
-            self.cbor = None
-            self.description = None
-
-        def from_cbor(cbor):
-            try:
-                # auto i = cbor.begin();
-                # auto end = cbor.end();
-                # size_t array_size;
-                # CborLite::decodeArraySize(i, end, array_size);
-                # if(array_size != 5) { throw InvalidHeader(); }
-                
-                # uint64_t n;
-                
-                # CborLite::decodeUnsigned(i, end, n);
-                # if(n > std::numeric_limits<decltype(seq_num_)>::max()) { throw InvalidHeader(); }
-                # seq_num_ = n;
-                
-                # CborLite::decodeUnsigned(i, end, n);
-                # if(n > std::numeric_limits<decltype(seq_len_)>::max()) { throw InvalidHeader(); }
-                # seq_len_ = n;
-                
-                # CborLite::decodeUnsigned(i, end, n);
-                # if(n > std::numeric_limits<decltype(message_len_)>::max()) { throw InvalidHeader(); }
-                # message_len_ = n;
-                
-                # CborLite::decodeUnsigned(i, end, n);
-                # if(n > std::numeric_limits<decltype(checksum_)>::max()) { throw InvalidHeader(); }
-                # checksum_ = n;
-
-                # CborLite::decodeBytes(i, end, data_);
-                pass
-            except Exception:
-                raise InvalidHeader()
-
-        def seq_num(self):
-            return self.seq_num
-
-        def seq_len(self):
-            return self.seq_len
-
-        def message_len(self):
-            return self.message_len
-
-        def checksum(self):
-            return self.checksum
-
-        def data(self):
-            return self.data
-
-    # ByteVector& message, size_t max_fragment_len, uint32_t first_seq_num = 0, size_t min_fragment_len = 10)
-    def __init__(self, message, max_fragment_len, first_seq_num = 0,min_fragment_len = 10):
+class Part:
+    class InvalidHeader(Exception):
         pass
+
+    # (uint32_t seq_num, size_t seq_len, size_t message_len, uint32_t checksum, const ByteVector& data) 
+    def __init__(self, seq_num, seq_len, message_len, checksum, data):
+        self.seq_num = seq_num
+        self.seq_len = seq_len
+        self.message_len = message_len
+        self.checksum = checksum
+        self.data = data
+        self.cbor = None
+
+    def from_cbor(cbor_buf):
+        try:
+            decoder = CBOREncoder(cbor_buf)
+            (array_size, _) = decoder.decodeArraySize()
+            if array_size != 5:
+                raise InvalidHeader()
+            
+            n = None
+            
+            (n, _) = decoder.decodeUnsigned();
+            if n > 0xffffffffffffffff:
+                raise InvalidHeader()
+            self.seq_num = n
+            
+            (n, _) = decoder.decodeUnsigned()
+            if n > 0xffffffffffffffff:
+                raise InvalidHeader()
+            self.seq_len = n
+            
+            (n, _) = decoder.decodeUnsigned()
+            if n > 0xffffffffffffffff:
+                raise InvalidHeader()
+            self.message_len = n
+            
+            (n, _) = decoder.decodeUnsigned()
+            if n > 0xffffffffffffffff:
+                raise InvalidHeader()
+            self.checksum = n
+
+            (data, _) = decoder.decodeBytes()
+            self.data = data
+        except Exception:
+            raise InvalidHeader()
+
+    def seq_num(self):
+        return self.seq_num
+
+    def seq_len(self):
+        return self.seq_len
+
+    def message_len(self):
+        return self.message_len
+
+    def checksum(self):
+        return self.checksum
+
+    def data(self):
+        return self.data
+
+    def description(self):
+        return "seqNum:{}, seqLen:{}, messageLen:{}, checksum:{}, data:{}".format(
+            self.seq_num, self.seq_len, self.message_len, self.checksum, data_to_hex(self.data))
+
+class FountainEncoder:
+    # ByteVector& message, size_t max_fragment_len, uint32_t first_seq_num = 0, size_t min_fragment_len = 10)
+    def __init__(self, message, max_fragment_len, first_seq_num = 0, min_fragment_len = 10):
+        assert(len(message) <= 0xffffffff)
+        self.message_len = len(message)
+        self.checksum = crc32_int(message)
+        self.fragment_len = FountainEncoder.find_nominal_fragment_length(self.message_len, min_fragment_len, max_fragment_len)
+        self.fragments = FountainEncoder.partition_message(message, self.fragment_len)
+        self.seq_num = first_seq_num
     
     @staticmethod
     def find_nominal_fragment_length(message_len, min_fragment_len, max_fragment_len):
@@ -105,9 +119,6 @@ class FountainEncoder:
 
         return fragments
 
-    def seq_num(self):
-        return self.seq_num
-
     def last_part_indexes(self):
         return self.last_part_indexes
 
@@ -123,8 +134,15 @@ class FountainEncoder:
     def is_single_part(self):
         return self.seq_len() == 1
 
-    def next_part():
-        pass
+    def next_part(self):
+        self.seq_num += 1
+        self.seq_num = self.seq_num % 0xffffffff  # wrap at period 2^32
+        indexes = choose_fragments(self.seq_num, self.seq_len(), self.checksum)
+        mixed = self.mix(indexes)
+        return Part(self.seq_num, self.seq_len(), self.message_len, self.checksum, bytes(mixed))
 
-    def _mix(indexes):
-        pass
+    def mix(self, indexes):
+        result = [0] * self.fragment_len
+        for index in indexes:
+            xor_into(result, self.fragments[index])
+        return result

@@ -170,7 +170,7 @@ class CBORDecoder:
         self.buf = buf
         self.pos = 0
 
-    def decodeTagAndAdditional(self, _flags):
+    def decodeTagAndAdditional(self, flags=Flag.none):
         if self.pos == len(self.buf):
             raise Exception("Not enough input")
         octet = buf[pos]
@@ -228,26 +228,26 @@ class CBORDecoder:
 
         raise Exception("Bad additional value")
 
-    def decodeUnsigned(self, flags):
+    def decodeUnsigned(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.unsignedInteger:
             raise Exception("Expected Tag.Major.unsignedInteger, but found {}".format(tag))
         return (value, length)
 
-    def decodeNegative(self, flags):
+    def decodeNegative(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.negativeInteger:
             raise Exception("Expected Tag.Major.negativeInteger, but found {}".format(tag))
         return (value, length)
 
-    def decodeInteger(self, flags):
+    def decodeInteger(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag == Tag.Major.unsignedInteger:
             return (value, length)
         elif tag == Tag.Major.negativeInteger:
             return (-1 - value, length)  # TODO: Check that this is the right way -- do we need to use struct.unpack()?
 
-    def decodeBool(self, flags):
+    def decodeBool(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag == Tag.Major.simple:
             if value == Tag.Minor.true:
@@ -257,7 +257,7 @@ class CBORDecoder:
             raise Exception("Not a Boolean")
         raise Exception("Not Simple/Boolean")
 
-    def decodeBytes(self, flags):
+    def decodeBytes(self, flags=Flag.none):
         # First value is the length of the bytes that follow
         (tag, byte_length, size_length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.byteString:
@@ -271,7 +271,7 @@ class CBORDecoder:
         self.pos += byte_length
         return (value, size_length + byte_length)
 
-    def decodeEncodedBytesPrefix(self, flags):
+    def decodeEncodedBytesPrefix(self, flags=Flag.none):
         (tag, value, length1) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.semantic or value != Tag.Minor.cborEncodedData:
             raise Exception("Not CBOR Encoded Data")
@@ -282,7 +282,7 @@ class CBORDecoder:
 
         return (tag, value, length1 + length2)
 
-    def decodeEncodedBytes(self, flags):
+    def decodeEncodedBytes(self, flags=Flag.none):
         (tag, minor_tag, tag_length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.semantic or minor_tag != Tag.Minor.cborEncodedData:
             raise Exception("Not CBOR Encoded Data")
@@ -290,7 +290,7 @@ class CBORDecoder:
         (value, length) = self.decodeBytes(flags)
         return (value, tag_length + length)
 
-    def decodeText(self, flags):
+    def decodeText(self, flags=Flag.none):
         # First value is the length of the bytes that follow
         (tag, byte_length, size_length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.textString:
@@ -304,13 +304,13 @@ class CBORDecoder:
         self.pos += byte_length
         return (value, size_length + byte_length)
 
-    def decodeArraySize(self, flags):
+    def decodeArraySize(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.array:
             raise Exception("Expected Tag.Major.array, but found {}".format(tag))
         return (value, length)
 
-    def decodeMapSize(self, flags):
+    def decodeMapSize(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.mask:
             raise Exception("Expected Tag.Major.map, but found {}".format(tag))
