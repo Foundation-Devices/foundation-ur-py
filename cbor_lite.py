@@ -66,8 +66,6 @@ class Tag:
 class TagMisc(Enum):
     undefined = Tag.Major.semantic.value + Tag.Minor.undefined.value
 
-print("TagMisc.undefined = {}".format(TagMisc.undefined.value))
-
 def byte_length(self, value):
     if value < 24:
         return 0

@@ -13,7 +13,7 @@ from bytewords import Bytewords
 from utils import crc32_bytes, crc32_int, data_to_hex, bytes_to_int, string_to_bytes
 from xoshiro256 import Xoshiro256
 from random_sampler import RandomSampler
-from fountain_utils import shuffled
+from fountain_utils import shuffled, choose_degree, choose_fragments
 from fountain_encoder import FountainEncoder
 # from foundation_decoder import FountianDecoder
 
@@ -183,6 +183,66 @@ class TestUR(unittest.TestCase):
         assert(fragments_hex == expected_fragments)
         # rejoined_message = FountainDecoder::join_fragments(fragments, message.size());
         # assert(message == rejoined_message);
+
+    def test_choose_fragments(self):
+        message = make_message(1024)
+        checksum = crc32_int(message)
+        fragment_len = FountainEncoder.find_nominal_fragment_length(len(message), 10, 100)
+        fragments = FountainEncoder.partition_message(message, fragment_len)
+        fragment_indexes = []
+        for seq_num in range(1, 31):
+            indexes_set = choose_fragments(seq_num, len(fragments), checksum)
+            indexes = list(indexes_set)
+            indexes.sort()
+            fragment_indexes.append(indexes)
+
+        print("fragment_indexes={}".format(fragment_indexes))
+        expected_fragment_indexes = [
+            [0],
+            [1],
+            [2],
+            [3],
+            [4],
+            [5],
+            [6],
+            [7],
+            [8],
+            [9],
+            [10],
+            [9],
+            [2, 5, 6, 8, 9, 10],
+            [8],
+            [1, 5],
+            [1],
+            [0, 2, 4, 5, 8, 10],
+            [5],
+            [2],
+            [2],
+            [0, 1, 3, 4, 5, 7, 9, 10],
+            [0, 1, 2, 3, 5, 6, 8, 9, 10],
+            [0, 2, 4, 5, 7, 8, 9, 10],
+            [3, 5],
+            [4],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            [0, 1, 3, 4, 5, 6, 7, 9, 10],
+            [6],
+            [5, 6],
+            [7]
+        ]
+        assert(fragment_indexes == expected_fragment_indexes)
+
+    def test_choose_degree(self):
+        message = make_message(1024)
+        fragment_len = FountainEncoder.find_nominal_fragment_length(len(message), 10, 100)
+        fragments = FountainEncoder.partition_message(message, fragment_len)
+        degrees = []
+        for nonce in range(1, 201):
+            part_rng = Xoshiro256.from_string("Wolf-{}".format(nonce))
+            degrees.append(choose_degree(len(fragments), part_rng))
+
+        expected_degrees = [11, 3, 6, 5, 2, 1, 2, 11, 1, 3, 9, 10, 10, 4, 2, 1, 1, 2, 1, 1, 5, 2, 4, 10, 3, 2, 1, 1, 3, 11, 2, 6, 2, 9, 9, 2, 6, 7, 2, 5, 2, 4, 3, 1, 6, 11, 2, 11, 3, 1, 6, 3, 1, 4, 5, 3, 6, 1, 1, 3, 1, 2, 2, 1, 4, 5, 1, 1, 9, 1, 1, 6, 4, 1, 5, 1, 2, 2, 3, 1, 1, 5, 2, 6, 1, 7, 11, 1, 8, 1, 5, 1, 1, 2, 2, 6, 4, 10, 1, 2, 5, 5, 5, 1, 1, 4, 1, 1, 1, 3, 5, 5, 5, 1, 4, 3, 3, 5, 1, 11, 3, 2, 8, 1, 2, 1, 1, 4, 5, 2, 1, 1, 1, 5, 6, 11, 10, 7, 4, 7, 1, 5, 3, 1, 1, 9, 1, 2, 5, 5, 2, 2, 3, 10, 1, 3, 2, 3, 3, 1, 1, 2, 1, 3, 2, 2, 1, 3, 8, 4, 1, 11, 6, 3, 1, 1, 1, 1, 1, 3, 1, 2, 1, 10, 1, 1, 8, 2, 7, 1, 2, 1, 9, 2, 10, 2, 1, 3, 4, 10]
+        assert(degrees == expected_degrees)
+
 
 if __name__ == '__main__':
     unittest.main()
