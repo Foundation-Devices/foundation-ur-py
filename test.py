@@ -196,7 +196,6 @@ class TestUR(unittest.TestCase):
             indexes.sort()
             fragment_indexes.append(indexes)
 
-        print("fragment_indexes={}".format(fragment_indexes))
         expected_fragment_indexes = [
             [0],
             [1],
