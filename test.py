@@ -14,7 +14,7 @@ from utils import crc32_bytes, crc32_int, data_to_hex, bytes_to_int, string_to_b
 from xoshiro256 import Xoshiro256
 from random_sampler import RandomSampler
 from fountain_utils import shuffled, choose_degree, choose_fragments
-from fountain_encoder import FountainEncoder
+from fountain_encoder import FountainEncoder, Part
 # from foundation_decoder import FountianDecoder
 
 def check_crc32(input, expected_hex):
@@ -326,6 +326,13 @@ class TestUR(unittest.TestCase):
             generated_parts_count += 1
 
         assert(encoder.seq_len() == generated_parts_count)
+
+    def test_fountain_cbor(self):
+        part = Part(12, 8, 100, 0x12345678, bytes([1, 5, 3, 3 ,5]))
+        cbor = part.cbor()
+        part2 = Part.from_cbor(cbor)
+        cbor2 = part2.cbor()
+        assert(cbor == cbor2)
 
 if __name__ == '__main__':
     unittest.main()

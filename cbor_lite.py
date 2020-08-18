@@ -12,59 +12,113 @@
 # distribution.
 
 from enum import Enum
+from utils import dotdict
 
-class Flag(Enum):
-    none = 0
-    requireMinimalEncoding = 1 << 0
+Flag = dotdict({
+    'none' : 0,
+    'requireMinimalEncoding' : 1 << 0
+})    
 
 
-class Tag:
-    class Major(Enum):
-        unsignedInteger = 0
-        negativeInteger = 1 << 5
-        byteString = 2 << 5
-        textString = 3 << 5
-        array = 4 << 5
-        map = 5 << 5
-        semantic = 6 << 5
-        floatingPoint = 7 << 5
-        simple = 7 << 5
-        mask = 0xe0
+Tag = dotdict({
+    'Major': dotdict(
+        {
+            'unsignedInteger': 0,
+            'negativeInteger' : 1 << 5,
+            'byteString' : 2 << 5,
+            'textString' : 3 << 5,
+            'array' : 4 << 5,
+            'map' : 5 << 5,
+            'semantic' : 6 << 5,
+            'floatingPoint' : 7 << 5,
+            'simple' : 7 << 5,
+            'mask' : 0xe0,
+        }
+    ),
+    'Minor': dotdict(
+        {
+            'length1' : 24,
+            'length2' : 25,
+            'length4' : 26,
+            'length8' : 27,
 
-    class Minor(Enum):
-        length1 = 24
-        length2 = 25
-        length4 = 26
-        length8 = 27
+            'false' : 20,
+            'true' : 21,
+            'null' : 22,
+            'undefined' : 23,
+            'halfFloat' : 25, # not implemented
+            'singleFloat' : 26,
+            'doubleFloat' : 27,
 
-        false = 20
-        true = 21
-        null = 22
-        undefined = 23
-        halfFloat = 25 # not implemented
-        singleFloat = 26
-        doubleFloat = 27
+            'dataTime' : 0,
+            'epochDataTime' : 1,
+            'positiveBignum' : 2,
+            'negativeBignum' : 3,
+            'decimalFraction' : 4,
+            'bigfloat' : 5,
+            'convertBase64Url' : 21,
+            'convertBase64' : 22,
+            'convertBase16' : 23,
+            'cborEncodedData' : 24,
+            'uri' : 32,
+            'base64Url' : 33,
+            'base64' : 34,
+            'regex' : 35,
+            'mimeMessage' : 36,
+            'selfDescribeCbor' : 55799,
+            'mask' : 0x1f
+        }
+    ),
+    'undefined': (6 << 5) + 23
+})
 
-        dataTime = 0
-        epochDataTime = 1
-        positiveBignum = 2
-        negativeBignum = 3
-        decimalFraction = 4
-        bigfloat = 5
-        convertBase64Url = 21
-        convertBase64 = 22
-        convertBase16 = 23
-        cborEncodedData = 24
-        uri = 32
-        base64Url = 33
-        base64 = 34
-        regex = 35
-        mimeMessage = 36
-        selfDescribeCbor = 55799
-        mask = 0x1f
+
+# class Major(Enum):
+#     unsignedInteger = 0
+#     negativeInteger = 1 << 5
+#     byteString = 2 << 5
+#     textString = 3 << 5
+#     array = 4 << 5
+#     map = 5 << 5
+#     semantic = 6 << 5
+#     floatingPoint = 7 << 5
+#     simple = 7 << 5
+#     mask = 0xe0
+
+# class Minor(Enum):
+#     length1 = 24
+#     length2 = 25
+#     length4 = 26
+#     length8 = 27
+
+#     false = 20
+#     true = 21
+#     null = 22
+#     undefined = 23
+#     halfFloat = 25 # not implemented
+#     singleFloat = 26
+#     doubleFloat = 27
+
+#     dataTime = 0
+#     epochDataTime = 1
+#     positiveBignum = 2
+#     negativeBignum = 3
+#     decimalFraction = 4
+#     bigfloat = 5
+#     convertBase64Url = 21
+#     convertBase64 = 22
+#     convertBase16 = 23
+#     cborEncodedData = 24
+#     uri = 32
+#     base64Url = 33
+#     base64 = 34
+#     regex = 35
+#     mimeMessage = 36
+#     selfDescribeCbor = 55799
+#     mask = 0x1f
 
 class TagMisc(Enum):
-    undefined = Tag.Major.semantic.value + Tag.Minor.undefined.value
+    undefined = Tag.Major.semantic + Tag.Minor.undefined
 
 def get_byte_length(value):
     if value < 24:
@@ -80,9 +134,7 @@ class CBOREncoder:
         return self.buf
 
     def encodeTagAndAdditional(self, tag, additional):
-        t = tag.value if isinstance(tag, Enum) else tag
-        a = additional.value if isinstance(additional, Enum) else additional
-        self.buf.append(t + a)
+        self.buf.append(tag + additional)
         return 1
 
     def encodeTagAndValue(self, tag, value):
@@ -175,28 +227,29 @@ class CBORDecoder:
     def decodeTagAndAdditional(self, flags=Flag.none):
         if self.pos == len(self.buf):
             raise Exception("Not enough input")
-        octet = buf[pos]
+        octet = self.buf[self.pos]
+        self.pos += 1
         tag = octet & Tag.Major.mask
         additional = octet & Tag.Minor.mask
         return (tag, additional, 1)
 
     def decodeTagAndValue(self, flags):
-        if pos == end:
+        end = len(self.buf)
+
+        if self.pos == end:
             raise Exception("Not enough input")        
 
-        additional = Tag.Minor.undefined
-        (tag, additional, length) = self.decodeTagAndAdditional(tag, additional, flags)
+        (tag, additional, length) = self.decodeTagAndAdditional(flags)
         if additional < Tag.Minor.length1:
-            t = additional
-            return length
+            value = additional
+            return (tag, value, length)
 
-        end = len(self.buf)
         value = 0
         if additional == Tag.Minor.length8:
             if end - self.pos < 8:
                 raise Exception("Not enough input")            
             for shift in [56, 48, 40, 32, 24, 16, 8, 0]:
-                value |= buf[self.pos] << shift
+                value |= self.buf[self.pos] << shift
                 self.pos += 1
             if ((flags & Flag.requireMinimalEncoding) and value == 0):
                 raise Exception("Encoding not minimal")
@@ -205,7 +258,7 @@ class CBORDecoder:
             if end - self.pos < 4:
                 raise Exception("Not enough input")            
             for shift in [24, 16, 8, 0]:
-                value |= buf[self.pos] << shift
+                value |= self.buf[self.pos] << shift
                 self.pos += 1
             if ((flags & Flag.requireMinimalEncoding) and value == 0):
                 raise Exception("Encoding not minimal")
@@ -214,7 +267,7 @@ class CBORDecoder:
             if end - self.pos < 2:
                 raise Exception("Not enough input")            
             for shift in [48, 0]:
-                value |= buf[self.pos] << shift
+                value |= self.buf[self.pos] << shift
                 self.pos += 1
             if ((flags & Flag.requireMinimalEncoding) and value == 0):
                 raise Exception("Encoding not minimal")
@@ -222,7 +275,7 @@ class CBORDecoder:
         elif additional == Tag.Minor.length1:
             if end - self.pos < 1:
                 raise Exception("Not enough input")            
-            value |= buf[self.pos] << shift
+            value |= self.buf[self.pos]
             self.pos += 1
             if ((flags & Flag.requireMinimalEncoding) and value == 0):
                 raise Exception("Encoding not minimal")
@@ -233,7 +286,7 @@ class CBORDecoder:
     def decodeUnsigned(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
         if tag != Tag.Major.unsignedInteger:
-            raise Exception("Expected Tag.Major.unsignedInteger, but found {}".format(tag))
+            raise Exception("Expected Tag.Major.unsignedInteger ({}), but found {}".format(Tag.Major.unsignedInteger, tag))
         return (value, length)
 
     def decodeNegative(self, flags=Flag.none):
@@ -269,7 +322,7 @@ class CBORDecoder:
         if end - self.pos < byte_length:
             raise Exception("Not enough input")
 
-        value = bytes(self.buf[self.pos, self.pos + byte_length])
+        value = bytes(self.buf[self.pos : self.pos + byte_length])
         self.pos += byte_length
         return (value, size_length + byte_length)
 
@@ -302,12 +355,13 @@ class CBORDecoder:
         if end - self.pos < byte_length:
             raise Exception("Not enough input")
 
-        value = bytes(self.buf[self.pos, self.pos + byte_length])
+        value = bytes(self.buf[self.pos : self.pos + byte_length])
         self.pos += byte_length
         return (value, size_length + byte_length)
 
     def decodeArraySize(self, flags=Flag.none):
         (tag, value, length) = self.decodeTagAndValue(flags)
+
         if tag != Tag.Major.array:
             raise Exception("Expected Tag.Major.array, but found {}".format(tag))
         return (value, length)

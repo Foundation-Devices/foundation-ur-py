@@ -4,7 +4,7 @@
 # Copyright © 2020 by Foundation Devices Inc.
 #
 
-from cbor_lite import CBOREncoder
+from cbor_lite import CBORDecoder, CBOREncoder
 
 from fountain_utils import choose_fragments
 import math
@@ -12,11 +12,11 @@ from utils import split, crc32_int, xor_into, data_to_hex
 
 import cbor_lite
 
-class Part:
-    class InvalidHeader(Exception):
-        pass
+class InvalidHeader(Exception):
+    pass
 
-    # (uint32_t seq_num, size_t seq_len, size_t message_len, uint32_t checksum, const ByteVector& data) 
+class Part:
+
     def __init__(self, seq_num, seq_len, message_len, checksum, data):
         self.seq_num = seq_num
         self.seq_len = seq_len
@@ -24,39 +24,35 @@ class Part:
         self.checksum = checksum
         self.data = data
 
+    @staticmethod
     def from_cbor(cbor_buf):
         try:
-            decoder = CBOREncoder(cbor_buf)
+            decoder = CBORDecoder(cbor_buf)
             (array_size, _) = decoder.decodeArraySize()
             if array_size != 5:
                 raise InvalidHeader()
-            
-            n = None
-            
-            (n, _) = decoder.decodeUnsigned();
-            if n > 0xffffffffffffffff:
+                        
+            (seq_num, _) = decoder.decodeUnsigned();
+            if seq_num > 0xffffffffffffffff:  # TODO: Do something better with this check
                 raise InvalidHeader()
-            self.seq_num = n
             
-            (n, _) = decoder.decodeUnsigned()
-            if n > 0xffffffffffffffff:
+            (seq_len, _) = decoder.decodeUnsigned()
+            if seq_len > 0xffffffffffffffff:
                 raise InvalidHeader()
-            self.seq_len = n
             
-            (n, _) = decoder.decodeUnsigned()
-            if n > 0xffffffffffffffff:
+            (message_len, _) = decoder.decodeUnsigned()
+            if message_len > 0xffffffffffffffff:
                 raise InvalidHeader()
-            self.message_len = n
             
-            (n, _) = decoder.decodeUnsigned()
-            if n > 0xffffffffffffffff:
+            (checksum, _) = decoder.decodeUnsigned()
+            if checksum > 0xffffffffffffffff:
                 raise InvalidHeader()
-            self.checksum = n
 
             (data, _) = decoder.decodeBytes()
-            self.data = data
+
+            return Part(seq_num, seq_len, message_len, checksum, data)
         except Exception:
-            raise InvalidHeader()
+           raise InvalidHeader()
 
     def cbor(self):
         encoder = CBOREncoder()
