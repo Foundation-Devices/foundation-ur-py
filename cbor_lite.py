@@ -66,7 +66,7 @@ class Tag:
 class TagMisc(Enum):
     undefined = Tag.Major.semantic.value + Tag.Minor.undefined.value
 
-def byte_length(self, value):
+def get_byte_length(value):
     if value < 24:
         return 0
     
@@ -79,41 +79,43 @@ class CBOREncoder:
     def get_bytes(self):
         return self.buf
 
-    def encodeTagAndAdditional(tag, additional):
-        buf.append(tag + additional)
+    def encodeTagAndAdditional(self, tag, additional):
+        t = tag.value if isinstance(tag, Enum) else tag
+        a = additional.value if isinstance(additional, Enum) else additional
+        self.buf.append(t + a)
         return 1
 
-    def encodeTagAndValue(tag, value):
-        length = byte_length(value)
+    def encodeTagAndValue(self, tag, value):
+        length = get_byte_length(value)
 
         # 5-8 bytes required, use 8 bytes
-        if length >= 5 and byte_length <= 8:
+        if length >= 5 and length <= 8:
             self.encodeTagAndAdditional(tag, Tag.Minor.length8)
-            self.buf.append((t.value >> 56) & 0xff)
-            self.buf.append((t.value >> 48) & 0xff)
-            self.buf.append((t.value >> 40) & 0xff)
-            self.buf.append((t.value >> 32) & 0xff)
-            self.buf.append((t.value >> 24) & 0xff)
-            self.buf.append((t.value >> 16) & 0xff)
-            self.buf.append((t.value >> 8) & 0xff)
-            self.buf.append(t.value & 0xff)
+            self.buf.append((value >> 56) & 0xff)
+            self.buf.append((value >> 48) & 0xff)
+            self.buf.append((value >> 40) & 0xff)
+            self.buf.append((value >> 32) & 0xff)
+            self.buf.append((value >> 24) & 0xff)
+            self.buf.append((value >> 16) & 0xff)
+            self.buf.append((value >> 8) & 0xff)
+            self.buf.append(value & 0xff)
 
         # 3-4 bytes required, use 4 bytes
-        elif length == 3 or byte_length == 4:
+        elif length == 3 or length == 4:
             self.encodeTagAndAdditional(tag, Tag.Minor.length4)
-            self.buf.append((t.value >> 24) & 0xff)
-            self.buf.append((t.value >> 16) & 0xff)
-            self.buf.append((t.value >> 8) & 0xff)
-            self.buf.append(t.value & 0xff)
+            self.buf.append((value >> 24) & 0xff)
+            self.buf.append((value >> 16) & 0xff)
+            self.buf.append((value >> 8) & 0xff)
+            self.buf.append(value & 0xff)
 
         elif length == 2:
             self.encodeTagAndAdditional(tag, Tag.Minor.length2)
-            self.buf.append((t.value >> 8) & 0xff)
-            self.buf.append(t.value & 0xff)
+            self.buf.append((value >> 8) & 0xff)
+            self.buf.append(value & 0xff)
 
         elif length == 1:
             self.encodeTagAndAdditional(tag, Tag.Minor.length1)
-            self.buf.append(t.value & 0xff)
+            self.buf.append(value & 0xff)
 
         elif length == 0:
             self.encodeTagAndAdditional(tag, value)
@@ -141,7 +143,7 @@ class CBOREncoder:
 
     def encodeBytes(self, value):
         length = self.encodeTagAndValue(Tag.Major.byteString, len(value))
-        buffer.append(value)
+        self.buf += value
         return length + len(value)
 
     def encodeEncodedBytesPrefix(self, value):

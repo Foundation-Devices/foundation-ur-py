@@ -23,7 +23,6 @@ class Part:
         self.message_len = message_len
         self.checksum = checksum
         self.data = data
-        self.cbor = None
 
     def from_cbor(cbor_buf):
         try:
@@ -58,6 +57,16 @@ class Part:
             self.data = data
         except Exception:
             raise InvalidHeader()
+
+    def cbor(self):
+        encoder = CBOREncoder()
+        encoder.encodeArraySize(5)
+        encoder.encodeInteger(self.seq_num)
+        encoder.encodeInteger(self.seq_len)
+        encoder.encodeInteger(self.message_len)
+        encoder.encodeInteger(self.checksum)
+        encoder.encodeBytes(self.data)
+        return encoder.get_bytes()
 
     def seq_num(self):
         return self.seq_num
@@ -139,7 +148,8 @@ class FountainEncoder:
         self.seq_num = self.seq_num % 0xffffffff  # wrap at period 2^32
         indexes = choose_fragments(self.seq_num, self.seq_len(), self.checksum)
         mixed = self.mix(indexes)
-        return Part(self.seq_num, self.seq_len(), self.message_len, self.checksum, bytes(mixed))
+        data = bytes(mixed)
+        return Part(self.seq_num, self.seq_len(), self.message_len, self.checksum, data)
 
     def mix(self, indexes):
         result = [0] * self.fragment_len
