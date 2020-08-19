@@ -44,7 +44,6 @@ def partition(s, n):
 def split(buf, count):
     return (buf[0:count], buf[count:])
 
-
 def xor_into(target, source):
     count = len(target)
     assert(count == len(source)) # Must be the same length

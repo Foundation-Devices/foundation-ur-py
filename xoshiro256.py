@@ -4,11 +4,17 @@
 # Copyright © 2020 by Foundation Devices Inc.
 #
 
-import struct
-import hashlib
-from utils import string_to_bytes, int_to_bytes
+import sys
+try:
+    import uhashlib as hashlib
+except:
+    try:
+        import hashlib
+    except:
+        sys.exit("ERROR: No hashlib or uhashlib implementation found (required for sha256)")
 
-MAX_UINT64 = 0xffffffffffffffff
+from utils import string_to_bytes, int_to_bytes
+from constants import MAX_UINT64
 
 # Original Info:
 # Written in 2018 by David Blackman and Sebastiano Vigna (vigna@acm.org)
@@ -103,7 +109,7 @@ class Xoshiro256:
         return result
 
     def next_double(self):
-        m = float(0xffffffffffffffff) + 1
+        m = float(MAX_UINT64) + 1
         nxt = self.next()
         return nxt / m
 

@@ -4,13 +4,11 @@
 # Copyright © 2020 by Foundation Devices Inc.
 #
 
-from cbor_lite import CBORDecoder, CBOREncoder
-
-from fountain_utils import choose_fragments
 import math
+from cbor_lite import CBORDecoder, CBOREncoder
+from fountain_utils import choose_fragments
 from utils import split, crc32_int, xor_into, data_to_hex
-
-import cbor_lite
+from constants import MAX_UINT32, MAX_UINT64
 
 class InvalidHeader(Exception):
     pass
@@ -32,20 +30,20 @@ class Part:
             if array_size != 5:
                 raise InvalidHeader()
                         
-            (seq_num, _) = decoder.decodeUnsigned();
-            if seq_num > 0xffffffffffffffff:  # TODO: Do something better with this check
+            (seq_num, _) = decoder.decodeUnsigned()
+            if seq_num > MAX_UINT64:  # TODO: Do something better with this check
                 raise InvalidHeader()
             
             (seq_len, _) = decoder.decodeUnsigned()
-            if seq_len > 0xffffffffffffffff:
+            if seq_len > MAX_UINT64:
                 raise InvalidHeader()
             
             (message_len, _) = decoder.decodeUnsigned()
-            if message_len > 0xffffffffffffffff:
+            if message_len > MAX_UINT64:
                 raise InvalidHeader()
             
             (checksum, _) = decoder.decodeUnsigned()
-            if checksum > 0xffffffffffffffff:
+            if checksum > MAX_UINT64:
                 raise InvalidHeader()
 
             (data, _) = decoder.decodeBytes()
@@ -86,7 +84,7 @@ class Part:
 class FountainEncoder:
     # ByteVector& message, size_t max_fragment_len, uint32_t first_seq_num = 0, size_t min_fragment_len = 10)
     def __init__(self, message, max_fragment_len, first_seq_num = 0, min_fragment_len = 10):
-        assert(len(message) <= 0xffffffff)
+        assert(len(message) <= MAX_UINT32)
         self.message_len = len(message)
         self.checksum = crc32_int(message)
         self.fragment_len = FountainEncoder.find_nominal_fragment_length(self.message_len, min_fragment_len, max_fragment_len)
@@ -115,7 +113,7 @@ class FountainEncoder:
         remaining = message
         fragments = []
         while len(remaining) != 0:
-            (fragment, remaining) = split(remaining, fragment_len);
+            (fragment, remaining) = split(remaining, fragment_len)
             padding = fragment_len - len(fragment)
             while padding > 0:
                 fragment.append(0)
@@ -141,7 +139,7 @@ class FountainEncoder:
 
     def next_part(self):
         self.seq_num += 1
-        self.seq_num = self.seq_num % 0xffffffff  # wrap at period 2^32
+        self.seq_num = self.seq_num % MAX_UINT32  # wrap at period 2^32
         indexes = choose_fragments(self.seq_num, self.seq_len(), self.checksum)
         mixed = self.mix(indexes)
         data = bytes(mixed)

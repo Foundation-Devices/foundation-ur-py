@@ -25,24 +25,24 @@ The highest-level APIs are found in `ur-encoder.py` and `ur-decoder.py`.
 
 ## Notes for Maintainers
 
-Before accepting a PR that can affect build or unit tests, make sure the following sequence of commands succeeds:
+Before accepting a PR that can affect build or unit tests, make sure the following command succeeds:
 
 ```
-TBD
+python test.py
 ```
 
 ## Origin, Authors, Copyright & Licenses
 
 Unless otherwise noted (either in this [/README.md](./README.md) or in the file's header comments) the contents of this repository are Copyright © 2020 by Foundation Devices Inc., and are [licensed](./LICENSE) under the [TBD](http://tbd).
 
-This code is a port from C++ to Python of the original reference implementation by Blockchain Commons.  See
+This code is a Python portof the original C++ reference implementation by Blockchain Commons.  See
 [Blockchain Commons UR Library](https://github.com/BlockchainCommons/bc-ur) for the original version.
 
 
 
 ### Dependencies
 
-TBD
+Either `hashlib` in a normal Python environment or `uhashlib` in MicroPython must be available.
 
 ## Contributing
 

@@ -181,8 +181,8 @@ class TestUR(unittest.TestCase):
             "170010067e2e75ebe2d2904aeb1f89d5dc98cd4a6f2faaa8be6d03354c990fd895a97feb54668473e9d942bb99e196d897e8f1b01625cf48a7b78d249bb4985c065aa8cd1402ed2ba1b6f908f63dcd84b66425df00000000000000000000"
         ]
         assert(fragments_hex == expected_fragments)
-        # rejoined_message = FountainDecoder::join_fragments(fragments, message.size());
-        # assert(message == rejoined_message);
+        # rejoined_message = FountainDecoder::join_fragments(fragments, message.size())
+        # assert(message == rejoined_message)
 
     def test_choose_fragments(self):
         message = make_message(1024)

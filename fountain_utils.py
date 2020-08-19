@@ -6,7 +6,6 @@
 
 from random_sampler import RandomSampler
 from utils import int_to_bytes
-
 from xoshiro256 import Xoshiro256
 
 # Fisher-Yates shuffle
@@ -33,7 +32,7 @@ def choose_fragments(seq_num, seq_len, checksum):
     # others. This means that if you only generate the first `seq_len` parts,
     # then you have all the parts you need to decode the message.
     if seq_num <= seq_len:
-        return set([seq_num - 1]) #  set<size_t>({seq_num - 1}); ???
+        return set([seq_num - 1])
     else:
         seed = int_to_bytes(seq_num) + int_to_bytes(checksum)
         rng = Xoshiro256.from_bytes(seed)

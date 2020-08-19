@@ -4,6 +4,8 @@
 # Copyright © 2020 by Foundation Devices Inc.
 #
 
+from constants import MAX_UINT32
+
 TABLE = None
 def crc32(buf):
     # Lazily instantiate CRC table
@@ -18,11 +20,11 @@ def crc32(buf):
 
             TABLE[i] = c
 
-    crc = 0xffffffff & ~0
+    crc = MAX_UINT32 & ~0
     for byte in buf:
         crc = (crc >> 8) ^ TABLE[(crc ^ byte) & 0xFF]
 
-    return 0xffffffff & ~crc
+    return MAX_UINT32 & ~crc
 
 def crc32n(buf):
     n = crc32(buf)

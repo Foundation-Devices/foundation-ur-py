@@ -40,7 +40,7 @@ def decode_word(word, word_len):
         raise ValueError('Invalid Bytewords.')
 
     offset = y * dim + x
-    value = WORD_ARRAY[offset];
+    value = WORD_ARRAY[offset]
     if value == -1:
         raise ValueError('Invalid Bytewords.')
 
