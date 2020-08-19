@@ -43,3 +43,12 @@ def choose_fragments(seq_num, seq_len, checksum):
             indexes.append(i)
         shuffled_indexes = shuffled(indexes, rng)
         return set(shuffled_indexes[0:degree])
+
+def contains(set_or_list, el):
+    return el in set_or_list
+
+def is_strict_subset(a, b):
+    return a.issubset(b)
+
+def set_difference(a, b):
+    return a.difference(b)

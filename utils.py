@@ -4,6 +4,7 @@
 # Copyright © 2020 by Foundation Devices Inc.
 #
 
+import itertools
 from crc32 import crc32, crc32n
 
 def crc32_bytes(buf):
@@ -44,6 +45,12 @@ def partition(s, n):
 def split(buf, count):
     return (buf[0:count], buf[count:])
 
+def join_lists(lists):
+    return list(itertools.chain.from_iterable(lists))
+
+def join_bytes(b):
+    return bytes(itertools.chain.from_iterable(b))
+
 def xor_into(target, source):
     count = len(target)
     assert(count == len(source)) # Must be the same length
@@ -55,9 +62,14 @@ def xor_with(a, b):
     xor_into(target, b)
     return target
 
+def take_first(s, count):
+    return s[0:count]
+
+def drop_first(s, count):
+    return s[count:]
+
 class dotdict(dict):
     """dot.notation access to dictionary attributes"""
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
-
