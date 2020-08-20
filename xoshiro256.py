@@ -167,4 +167,3 @@ class Xoshiro256:
         self.s[1] = s1
         self.s[2] = s2
         self.s[3] = s3
-

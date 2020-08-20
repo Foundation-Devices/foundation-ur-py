@@ -8,6 +8,7 @@
 from constants import MAX_UINT32
 
 TABLE = None
+
 def crc32(buf):
     # Lazily instantiate CRC table
     global TABLE

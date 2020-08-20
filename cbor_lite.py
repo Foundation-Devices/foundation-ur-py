@@ -73,51 +73,6 @@ Tag = dotdict({
     'undefined': (6 << 5) + 23
 })
 
-
-# class Major(Enum):
-#     unsignedInteger = 0
-#     negativeInteger = 1 << 5
-#     byteString = 2 << 5
-#     textString = 3 << 5
-#     array = 4 << 5
-#     map = 5 << 5
-#     semantic = 6 << 5
-#     floatingPoint = 7 << 5
-#     simple = 7 << 5
-#     mask = 0xe0
-
-# class Minor(Enum):
-#     length1 = 24
-#     length2 = 25
-#     length4 = 26
-#     length8 = 27
-
-#     false = 20
-#     true = 21
-#     null = 22
-#     undefined = 23
-#     halfFloat = 25 # not implemented
-#     singleFloat = 26
-#     doubleFloat = 27
-
-#     dataTime = 0
-#     epochDataTime = 1
-#     positiveBignum = 2
-#     negativeBignum = 3
-#     decimalFraction = 4
-#     bigfloat = 5
-#     convertBase64Url = 21
-#     convertBase64 = 22
-#     convertBase16 = 23
-#     cborEncodedData = 24
-#     uri = 32
-#     base64Url = 33
-#     base64 = 34
-#     regex = 35
-#     mimeMessage = 36
-#     selfDescribeCbor = 55799
-#     mask = 0x1f
-
 class TagMisc(Enum):
     undefined = Tag.Major.semantic + Tag.Minor.undefined
 

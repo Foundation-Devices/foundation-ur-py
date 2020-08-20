@@ -83,7 +83,6 @@ class Part:
             self.seq_num, self.seq_len, self.message_len, self.checksum, data_to_hex(self.data))
 
 class FountainEncoder:
-    # ByteVector& message, size_t max_fragment_len, uint32_t first_seq_num = 0, size_t min_fragment_len = 10)
     def __init__(self, message, max_fragment_len, first_seq_num = 0, min_fragment_len = 10):
         assert(len(message) <= MAX_UINT32)
         self.message_len = len(message)
