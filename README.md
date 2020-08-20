@@ -90,18 +90,18 @@ We do ask that you offer us good faith and use best efforts not to leak informat
 
 ### Reporting a Vulnerability
 
-Please report suspected security vulnerabilities in private via email to ChristopherA@BlockchainCommons.com (do not use this email for support). Please do NOT create publicly viewable issues for suspected security vulnerabilities.
+Please report suspected security vulnerabilities in private via email to ken@foundationdevices.com (do not use this email for support). Please do NOT create publicly viewable issues for suspected security vulnerabilities.
 
 The following keys may be used to communicate sensitive information to developers:
 
-| Name            | Fingerprint |
-| --------------- | ----------- |
-| security@...TBD | TBD         |
+| Name                      | Fingerprint   |
+| ------------------------- | ------------- |
+| ken@foundationdevices.com | Coming Soon.. |
 
 You can import a key by running the following command with that individual’s fingerprint: `gpg --recv-keys "<fingerprint>"` Ensure that you put quotes around fingerprints that contain spaces.
 
 ## Version History
 
-### 0.1.0, 08/20/2020 - TBD
+### 0.1.0, 08/20/2020 - Initial release
 
 * Initial testing release.
