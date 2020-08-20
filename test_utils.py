@@ -6,6 +6,7 @@
 
 from xoshiro256 import Xoshiro256
 from cbor_lite import CBOREncoder
+from ur import UR
 
 def make_message(length, seed = "Wolf"):
     rng = Xoshiro256.from_string(seed)
@@ -16,6 +17,5 @@ def make_message_ur(length, seed = "Wolf"):
     encoder = CBOREncoder()
     encoder.encodeBytes(message)
     
-    # TODO: Implement UR and add this code in
-    # return UR("bytes", encoder.get_bytes())
+    return UR("bytes", encoder.get_bytes())
 

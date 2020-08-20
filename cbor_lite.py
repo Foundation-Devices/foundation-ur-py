@@ -266,7 +266,7 @@ class CBORDecoder:
         elif additional == Tag.Minor.length2:
             if end - self.pos < 2:
                 raise Exception("Not enough input")            
-            for shift in [48, 0]:
+            for shift in [8, 0]:
                 value |= self.buf[self.pos] << shift
                 self.pos += 1
             if ((flags & Flag.requireMinimalEncoding) and value == 0):

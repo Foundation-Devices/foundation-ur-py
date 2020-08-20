@@ -16,7 +16,8 @@ from random_sampler import RandomSampler
 from fountain_utils import shuffled, choose_degree, choose_fragments
 from fountain_encoder import FountainEncoder, Part
 from fountain_decoder import FountainDecoder
-# from foundation_decoder import FountianDecoder
+from ur_encoder import UREncoder
+from ur_decoder import URDecoder
 
 def check_crc32(input, expected_hex):
     checksum = crc32_int(bytes(input, 'utf8'))
@@ -356,6 +357,63 @@ class TestUR(unittest.TestCase):
         part2 = Part.from_cbor(cbor)
         cbor2 = part2.cbor()
         assert(cbor == cbor2)
+
+    def test_single_part_ur(self):
+        ur = make_message_ur(50)
+        encoded = UREncoder.encode(ur)
+        expected = "ur:bytes/hdeymejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtgwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsdwkbrkch"
+        assert(encoded == expected)
+        decoded = URDecoder.decode(encoded)
+        assert(ur == decoded)
+
+    def test_ur_encoder(self):
+        ur = make_message_ur(256)
+        encoder = UREncoder(ur, 30)
+        parts = []
+        for i in range(20):
+            parts.append(encoder.next_part())
+
+        expected_parts = [
+            "ur:bytes/1-9/ltadascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtdkgsltgh",
+            "ur:bytes/2-9/ltaoascfadaxcywenbpljkhdcagwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsgmghhkhstlrdcxaefz",
+            "ur:bytes/3-9/ltaxascfadaxcywenbpljkhdcahelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjksopdzool",
+            "ur:bytes/4-9/ltaaascfadaxcywenbpljkhdcasotkhemthydawydtaxneurlkosgwcekonertkbrlwmplssjtammdplolsbrdzertas",
+            "ur:bytes/5-9/ltahascfadaxcywenbpljkhdcatbbdfmssrkzocwnezmlennjpfzbgmuktrhtejscktelgfpdlrkfyfwdajldejokbwf",
+            "ur:bytes/6-9/ltamascfadaxcywenbpljkhdcackjlhkhybssklbwefectpfnbbectrljectpavyrolkzezepkmwidmwoxkilghdsowp",
+            "ur:bytes/7-9/ltatascfadaxcywenbpljkhdcavszownjkwtclrtvaynhpahrtoxmwvwatmedibkaegdosftvandiodagdhthtrlnnhy",
+            "ur:bytes/8-9/ltayascfadaxcywenbpljkhdcadmsponkkbbhgsolnjntegepmttmoonftnbuoiyrehfrtsabzsttorodklubbuyaetk",
+            "ur:bytes/9-9/ltasascfadaxcywenbpljkhdcajskecpmdckihdyhphfotjojtfmlpwmadspaxrkytbztpbauotbgtgtaeaevtgavtny",
+            "ur:bytes/10-9/ltbkascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtwdkiplzs",
+            "ur:bytes/11-9/ltbdascfadaxcywenbpljkhdcahelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjkvetiiapk",
+            "ur:bytes/12-9/ltbnascfadaxcywenbpljkhdcarllaluzodmgstospeyiefmwejlwtpedamktksrvlcygmzmmovovllarodtmtbnptrs",
+            "ur:bytes/13-9/ltbtascfadaxcywenbpljkhdcamtkgtpknghchchyketwsvwgwfdhpgmgtylctotztpdrpayoschcmhplffziachrfgd",
+            "ur:bytes/14-9/ltbaascfadaxcywenbpljkhdcapazmwnvonnvdnsbyleynwtnsjkjndeoldydkbkdslgjkbbkortbelomueekgvstegt",
+            "ur:bytes/15-9/ltbsascfadaxcywenbpljkhdcaynmhpddpzoversbdqdfyrehnqzlugmjzmnmtwmrouohtstgsbsahpawkditkckynwt",
+            "ur:bytes/16-9/ltbeascfadaxcywenbpljkhdcawygekobamwtlihsnpalpsghenskkiynthdzttsimtojetprsttmukirlrsbtamjtpd",
+            "ur:bytes/17-9/ltbyascfadaxcywenbpljkhdcamklgftaxykpewyrtqzhydntpnytyisincxmhtbceaykolduortotiaiaiafhiaoyce",
+            "ur:bytes/18-9/ltbgascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtntwkbkwy",
+            "ur:bytes/19-9/ltbwascfadaxcywenbpljkhdcadekicpaajootjzpsdrbalteywllbdsnbinaerkurspbncxgslgftvtsrjtksplcpeo",
+            "ur:bytes/20-9/ltbbascfadaxcywenbpljkhdcayapmrleeleaxpasfrtrdkncffwjyjzgyetdmlewtkpktgllepfrltatazcksmhkbot"
+        ]
+        assert(parts == expected_parts)
+
+    def test_multipart_ur(self):
+        ur = make_message_ur(32767)
+        max_fragment_len = 1000
+        first_seq_num = 100
+        encoder = UREncoder(ur, max_fragment_len, first_seq_num)
+        decoder = URDecoder()
+        while True:
+            part = encoder.next_part()
+            decoder.receive_part(part)
+            if decoder.is_complete():
+                break
+
+        if decoder.is_success():
+            assert(decoder.result == ur)
+        else:
+            print('{}'.format(decoder.result))
+            assert(false)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,5 @@
 #
-# fountain_utils.py
+# constants.py
 #
 # Copyright © 2020 by Foundation Devices Inc.
 #
