@@ -1,4 +1,4 @@
-# [Foundation Devices UR Library](https://github.com/Foundation-Devices/foundation-ur-py)
+# [Foundation Devices Python UR Library](https://github.com/Foundation-Devices/foundation-ur-py)
 
 **UR Implementation in Python -- ported from the [C++ Reference Implementation by Blockchain Commons](https://github.com/BlockchainCommons/bc-ur)**
 
