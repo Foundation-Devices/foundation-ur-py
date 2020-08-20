@@ -6,22 +6,42 @@
 
 URs ("Uniform Resources") are a method for encoding structured binary data for transport in URIs and QR Codes. They are described in [BCR-2020-005](https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-005-ur.md).
 
-There also another reference implementation in Swift: [URKit](https://github.com/blockchaincommons/URKit), and a demo app that uses it to display and read multi-part animated QR codes: [URDemo](https://github.com/blockchaincommons/URDemo).
+There is also another reference implementation in Swift: [URKit](https://github.com/blockchaincommons/URKit), and a demo app that uses it to display and read multi-part animated QR codes: [URDemo](https://github.com/blockchaincommons/URDemo).
 
 ## Installation
 
-```
-TBD
-```
-
-This sequence runs the module's unit tests.
+The code is not yet available in a package format, so just copy the files into your project.
 
 ## Use
 
 1. Include the source folder in your Python project
-2. `import ur` and use `ur.encode()` and `ur.decode()`
 
-The highest-level APIs are found in `ur-encoder.py` and `ur-decoder.py`.
+2. Import the encoder and decoder:
+    ```
+    from ur_encoder import UREncoder
+    from ur_decoder import URDecoder
+    ```
+
+3. Write some test code:
+
+    ```
+        ur = make_message_ur(32767)
+        max_fragment_len = 1000
+        first_seq_num = 100
+        encoder = UREncoder(ur, max_fragment_len, first_seq_num)
+        decoder = URDecoder()
+        while True:
+            part = encoder.next_part()
+            decoder.receive_part(part)
+            if decoder.is_complete():
+                break
+
+        if decoder.is_success():
+            assert(decoder.result == ur)
+        else:
+            print('{}'.format(decoder.result))
+            assert(false)
+    ```
 
 ## Notes for Maintainers
 
@@ -31,14 +51,14 @@ Before accepting a PR that can affect build or unit tests, make sure the followi
 python test.py
 ```
 
+Ensure that you add new unit tests for new or modified functionality.
+
 ## Origin, Authors, Copyright & Licenses
 
-Unless otherwise noted (either in this [/README.md](./README.md) or in the file's header comments) the contents of this repository are Copyright © 2020 by Foundation Devices Inc., and are [licensed](./LICENSE) under the [TBD](http://tbd).
+Unless otherwise noted (either in this [/README.md](./README.md) or in the file's header comments) the contents of this repository are Copyright © 2020 Foundation Devices, Inc., and are [licensed](./LICENSE) under the [spdx:BSD-2-Clause Plus Patent License](https://spdx.org/licenses/BSD-2-Clause-Patent.html).
 
-This code is a Python portof the original C++ reference implementation by Blockchain Commons.  See
+This code is a Python port of the original C++ reference implementation by Blockchain Commons.  See
 [Blockchain Commons UR Library](https://github.com/BlockchainCommons/bc-ur) for the original version.
-
-
 
 ### Dependencies
 

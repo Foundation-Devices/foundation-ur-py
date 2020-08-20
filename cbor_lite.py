@@ -1,7 +1,8 @@
 #
 # crc32.py
 #
-# Copyright © 2020 by Foundation Devices Inc.
+# Copyright © 2020 Foundation Devices, Inc.
+# Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
 # From: https://bitbucket.org/isode/cbor-lite/raw/6c770624a97e3229e3f200be092c1b9c70a60ef1/include/cbor-lite/codec.h

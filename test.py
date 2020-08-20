@@ -1,7 +1,8 @@
 #
 # test.py
 #
-# Copyright © 2020 by Foundation Devices Inc.
+# Copyright © 2020 Foundation Devices, Inc.
+# Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
 
