@@ -12,6 +12,10 @@ There is also another reference implementation in Swift: [URKit](https://github.
 
 The code is not yet available in a package format, so just copy the files into your project.
 
+### Dependencies
+
+Either `hashlib` in a normal Python environment or `uhashlib` in MicroPython must be available.
+
 ## Use
 
 1. Include the source folder in your Python project
@@ -59,10 +63,6 @@ Unless otherwise noted (either in this [/README.md](./README.md) or in the file'
 
 This code is a Python port of the original C++ reference implementation by Blockchain Commons.  See
 [Blockchain Commons UR Library](https://github.com/BlockchainCommons/bc-ur) for the original version.
-
-### Dependencies
-
-Either `hashlib` in a normal Python environment or `uhashlib` in MicroPython must be available.
 
 ## Contributing
 
