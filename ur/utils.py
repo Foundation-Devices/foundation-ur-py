@@ -49,9 +49,11 @@ def join_lists(lists):
     # return [y for x in lists for y in x]
     return sum(lists, [])
 
-def join_bytes(b):
-    # return bytes([y for x in b for y in x])
-    return sum(b, b'')
+def join_bytes(list_of_ba):
+    out = bytearray()
+    for ba in list_of_ba:
+        out.extend(ba)
+    return out
 
 def xor_into(target, source):
     count = len(target)

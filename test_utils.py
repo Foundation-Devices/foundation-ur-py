@@ -19,4 +19,3 @@ def make_message_ur(length, seed = "Wolf"):
     encoder.encodeBytes(message)
     
     return UR("bytes", encoder.get_bytes())
-

@@ -5,8 +5,6 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-print('__name__={}  __package__={}'.format(__name__, __package__))
-
 try:
     import unittest
 except:
@@ -35,17 +33,18 @@ else:
     BaseClass = unittest.TestCase
 
 class TestUR(BaseClass):
-    def assertRaises(self, exc_type, func, *args, **kwargs):
+    def assertRaises(self, exc_type, func):
         if unittest == None:
             raised_exc = None
             try:
-                func(*args, **kwargs)
+                func()
             except exc_type as e:
                 raised_exc = e
             if not raised_exc:
                 assert("{0} was not raised".format(exc_type))
         else:
             return super(self, exc_type, func, args)
+            return super().assertRaises(exc_type, func)
 
     def test_crc32(self):
         assert check_crc32("Hello, world!", "ebe6c6e6")
