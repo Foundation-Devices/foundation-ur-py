@@ -6,10 +6,10 @@
 #
 
 import math
-from cbor_lite import CBORDecoder, CBOREncoder
-from fountain_utils import choose_fragments
-from utils import split, crc32_int, xor_into, data_to_hex
-from constants import MAX_UINT32, MAX_UINT64
+from .cbor_lite import CBORDecoder, CBOREncoder
+from .fountain_utils import choose_fragments
+from .utils import split, crc32_int, xor_into, data_to_hex
+from .constants import MAX_UINT32, MAX_UINT64
 
 class InvalidHeader(Exception):
     pass
@@ -28,22 +28,27 @@ class Part:
         try:
             decoder = CBORDecoder(cbor_buf)
             (array_size, _) = decoder.decodeArraySize()
+            print('array_size={}'.format(array_size))
             if array_size != 5:
                 raise InvalidHeader()
                         
             (seq_num, _) = decoder.decodeUnsigned()
+            print('seq_num={}'.format(seq_num))
             if seq_num > MAX_UINT64:  # TODO: Do something better with this check
                 raise InvalidHeader()
             
             (seq_len, _) = decoder.decodeUnsigned()
+            print('seq_len={}'.format(seq_len))
             if seq_len > MAX_UINT64:
                 raise InvalidHeader()
             
             (message_len, _) = decoder.decodeUnsigned()
+            print('message_len={}'.format(message_len))
             if message_len > MAX_UINT64:
                 raise InvalidHeader()
             
             (checksum, _) = decoder.decodeUnsigned()
+            print('checksum={}'.format(checksum))
             if checksum > MAX_UINT64:
                 raise InvalidHeader()
 

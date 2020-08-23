@@ -14,8 +14,8 @@ except:
     except:
         sys.exit("ERROR: No hashlib or uhashlib implementation found (required for sha256)")
 
-from utils import string_to_bytes, int_to_bytes
-from constants import MAX_UINT64
+from ur.utils import string_to_bytes, int_to_bytes
+from ur.constants import MAX_UINT64
 
 # Original Info:
 # Written in 2018 by David Blackman and Sebastiano Vigna (vigna@acm.org)

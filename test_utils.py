@@ -5,9 +5,9 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from xoshiro256 import Xoshiro256
-from cbor_lite import CBOREncoder
-from ur import UR
+from ur.xoshiro256 import Xoshiro256
+from ur.cbor_lite import CBOREncoder
+from ur.ur import UR
 
 def make_message(length, seed = "Wolf"):
     rng = Xoshiro256.from_string(seed)

@@ -5,8 +5,8 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from fountain_encoder import FountainEncoder
-from bytewords import Bytewords
+from .fountain_encoder import FountainEncoder
+from .bytewords import *
 
 class UREncoder:
     # Start encoding a (possibly) multi-part UR.
@@ -17,7 +17,7 @@ class UREncoder:
     # Encode a single-part UR.
     @staticmethod
     def encode(ur):
-        body = Bytewords.encode(Bytewords.Style.minimal, ur.cbor)
+        body = Bytewords.encode(Bytewords_Style_minimal, ur.cbor)
         return UREncoder.encode_ur([ur.type, body])
 
     def last_part_indexes(self):
@@ -44,7 +44,7 @@ class UREncoder:
     @staticmethod
     def encode_part(type, part):
         seq = '{}-{}'.format(part.seq_num, part.seq_len)
-        body = Bytewords.encode(Bytewords.Style.minimal, part.cbor())
+        body = Bytewords.encode(Bytewords_Style_minimal, part.cbor())
         result = UREncoder.encode_ur([type, seq, body])
         return result
 

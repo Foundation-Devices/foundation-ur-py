@@ -5,8 +5,7 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from enum import Enum
-from utils import crc32_bytes, partition
+from .utils import crc32_bytes, partition
 
 BYTEWORDS = 'ableacidalsoapexaquaarchatomauntawayaxisbackbaldbarnbeltbetabiasbluebodybragbrewbulbbuzzcalmcashcatschefcityclawcodecolacookcostcruxcurlcuspcyandarkdatadaysdelidicedietdoordowndrawdropdrumdulldutyeacheasyechoedgeepicevenexamexiteyesfactfairfernfigsfilmfishfizzflapflewfluxfoxyfreefrogfuelfundgalagamegeargemsgiftgirlglowgoodgraygrimgurugushgyrohalfhanghardhawkheathelphighhillholyhopehornhutsicedideaidleinchinkyintoirisironitemjadejazzjoinjoltjowljudojugsjumpjunkjurykeepkenokeptkeyskickkilnkingkitekiwiknoblamblavalazyleaflegsliarlistlimplionlogoloudloveluaulucklungmainmanymathmazememomenumeowmildmintmissmonknailnavyneednewsnextnoonnotenumbobeyoboeomitonyxopenovalowlspaidpartpeckplaypluspoempoolposepuffpumapurrquadquizraceramprealredorichroadrockroofrubyruinrunsrustsafesagascarsetssilkskewslotsoapsolosongstubsurfswantacotasktaxitenttiedtimetinytoiltombtoystriptunatwinuglyundouniturgeuservastveryvetovialvibeviewvisavoidvowswallwandwarmwaspwavewaxywebswhatwhenwhizwolfworkyankyawnyellyogayurtzapszestzinczonezoomzero'
 WORD_ARRAY = None
@@ -113,30 +112,29 @@ def decode(s, separator, word_len):
 
     return body
 
-class Bytewords:
-    class Style(Enum):
-        standard = 1
-        uri = 2
-        minimal = 3
+Bytewords_Style_standard = 1
+Bytewords_Style_uri = 2
+Bytewords_Style_minimal = 3
 
+class Bytewords:
     @staticmethod
     def encode(style, bytes):
-        if style == Bytewords.Style.standard:
+        if style == Bytewords_Style_standard:
             return encode_with_separator(bytes, ' ')
-        elif style == Bytewords.Style.uri:
+        elif style == Bytewords_Style_uri:
             return encode_with_separator(bytes, '-')
-        elif style == Bytewords.Style.minimal:
+        elif style == Bytewords_Style_minimal:
             return encode_minimal(bytes)
         else:
-            assert(false)
+            assert(False)
 
     @staticmethod
     def decode(style, str):
-        if style == Bytewords.Style.standard:
+        if style == Bytewords_Style_standard:
             return decode(str, ' ', 4)
-        elif style == Bytewords.Style.uri:
+        elif style == Bytewords_Style_uri:
             return decode(str, '-', 4)
-        elif style == Bytewords.Style.minimal:
+        elif style == Bytewords_Style_minimal:
             return decode(str, 0, 2)
         else:
-            assert(false)
+            assert(False)

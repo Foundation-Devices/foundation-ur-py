@@ -5,7 +5,10 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from constants import MAX_UINT32
+from .constants import MAX_UINT32
+
+def bit_length(n):
+    return len(bin(abs(n))) - 2
 
 TABLE = None
 
@@ -30,4 +33,4 @@ def crc32(buf):
 
 def crc32n(buf):
     n = crc32(buf)
-    return n.to_bytes((n.bit_length() + 7) // 8, 'big')
+    return n.to_bytes((bit_length(n) + 7) // 8, 'big')

@@ -5,8 +5,7 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-import itertools
-from crc32 import crc32, crc32n
+from .crc32 import crc32, crc32n
 
 def crc32_bytes(buf):
     checksum = crc32n(buf)
@@ -16,7 +15,7 @@ def crc32_int(buf):
     return crc32(buf)
 
 def data_to_hex(buf):
-    return buf.hex()
+    return ''.join('{:02x}'.format(x) for x in buf)
 
 def int_to_bytes(n):
     # return n.to_bytes((n.bit_length() + 7) // 8, 'big')
@@ -47,10 +46,12 @@ def split(buf, count):
     return (buf[0:count], buf[count:])
 
 def join_lists(lists):
-    return list(itertools.chain.from_iterable(lists))
+    # return [y for x in lists for y in x]
+    return sum(lists, [])
 
 def join_bytes(b):
-    return bytes(itertools.chain.from_iterable(b))
+    # return bytes([y for x in b for y in x])
+    return sum(b, b'')
 
 def xor_into(target, source):
     count = len(target)
@@ -68,9 +69,3 @@ def take_first(s, count):
 
 def drop_first(s, count):
     return s[count:]
-
-class dotdict(dict):
-    """dot.notation access to dictionary attributes"""
-    __getattr__ = dict.get
-    __setattr__ = dict.__setitem__
-    __delattr__ = dict.__delitem__

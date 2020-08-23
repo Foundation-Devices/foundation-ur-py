@@ -5,54 +5,73 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
+print('__name__={}  __package__={}'.format(__name__, __package__))
 
-import unittest
+try:
+    import unittest
+except:
+    unittest = None
 
 from test_utils import make_message, make_message_ur
 
-from bytewords import Bytewords
-from utils import crc32_bytes, crc32_int, data_to_hex, bytes_to_int, string_to_bytes, xor_into
-from xoshiro256 import Xoshiro256
-from random_sampler import RandomSampler
-from fountain_utils import shuffled, choose_degree, choose_fragments
-from fountain_encoder import FountainEncoder, Part
-from fountain_decoder import FountainDecoder
-from ur_encoder import UREncoder
-from ur_decoder import URDecoder
+from ur.bytewords import *
+from ur.utils import crc32_bytes, crc32_int, data_to_hex, bytes_to_int, string_to_bytes, xor_into
+from ur.xoshiro256 import Xoshiro256
+from ur.random_sampler import RandomSampler
+from ur.fountain_utils import shuffled, choose_degree, choose_fragments
+from ur.fountain_encoder import FountainEncoder, Part
+from ur.fountain_decoder import FountainDecoder
+from ur.ur_encoder import UREncoder
+from ur.ur_decoder import URDecoder
 
 def check_crc32(input, expected_hex):
     checksum = crc32_int(bytes(input, 'utf8'))
     hex = '{:x}'.format(checksum)
     return hex == expected_hex
 
-class TestUR(unittest.TestCase):
+if unittest == None:
+    BaseClass = object
+else:
+    BaseClass = unittest.TestCase
+
+class TestUR(BaseClass):
+    def assertRaises(self, exc_type, func, *args, **kwargs):
+        if unittest == None:
+            raised_exc = None
+            try:
+                func(*args, **kwargs)
+            except exc_type as e:
+                raised_exc = e
+            if not raised_exc:
+                assert("{0} was not raised".format(exc_type))
+        else:
+            return super(self, exc_type, func, args)
+
     def test_crc32(self):
         assert check_crc32("Hello, world!", "ebe6c6e6")
         assert check_crc32("Wolf", "598c84dc")
 
     def test_bytewords_1(self):
         input = bytes([0, 1, 2, 128, 255])
-        assert(Bytewords.encode(Bytewords.Style.standard, input) == "able acid also lava zero jade need echo taxi")
-        assert(Bytewords.encode(Bytewords.Style.uri, input) == "able-acid-also-lava-zero-jade-need-echo-taxi")
-        assert(Bytewords.encode(Bytewords.Style.minimal, input) == "aeadaolazojendeoti")
+        assert(Bytewords.encode(Bytewords_Style_standard, input) == "able acid also lava zero jade need echo taxi")
+        assert(Bytewords.encode(Bytewords_Style_uri, input) == "able-acid-also-lava-zero-jade-need-echo-taxi")
+        assert(Bytewords.encode(Bytewords_Style_minimal, input) == "aeadaolazojendeoti")
 
-        assert(Bytewords.decode(Bytewords.Style.standard, "able acid also lava zero jade need echo taxi") == input)
-        assert(Bytewords.decode(Bytewords.Style.uri, "able-acid-also-lava-zero-jade-need-echo-taxi") == input)
-        assert(Bytewords.decode(Bytewords.Style.minimal, "aeadaolazojendeoti") == input)
+        assert(Bytewords.decode(Bytewords_Style_standard, "able acid also lava zero jade need echo taxi") == input)
+        assert(Bytewords.decode(Bytewords_Style_uri, "able-acid-also-lava-zero-jade-need-echo-taxi") == input)
+        assert(Bytewords.decode(Bytewords_Style_minimal, "aeadaolazojendeoti") == input)
 
         # bad checksum
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.standard, "able acid also lava zero jade need echo wolf")
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.uri, "able-acid-also-lava-zero-jade-need-echo-wolf")
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.minimal, "aeadaolazojendeowf")
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_standard, "able acid also lava zero jade need echo wolf"))
+
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_uri, "able-acid-also-lava-zero-jade-need-echo-wolf"))
+
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_minimal, "aeadaolazojendeowf"))
 
         # too short
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.standard, "wolf")
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.standard, "")
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_standard, "wolf"))
+        
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_standard, ""))
 
     def test_bytewords_2(self):
         input = bytes([
@@ -89,10 +108,10 @@ class TestUR(unittest.TestCase):
             "fhecwzonnbmhcybtgwweltflgmfezmonledtgocs" + \
             "fzhycypf"
 
-        assert(Bytewords.encode(Bytewords.Style.standard, input) == encoded)
-        assert(Bytewords.encode(Bytewords.Style.minimal, input) == encoded_minimal)
-        assert(Bytewords.decode(Bytewords.Style.standard, encoded) == input)
-        assert(Bytewords.decode(Bytewords.Style.minimal, encoded_minimal) == input)
+        assert(Bytewords.encode(Bytewords_Style_standard, input) == encoded)
+        assert(Bytewords.encode(Bytewords_Style_minimal, input) == encoded_minimal)
+        assert(Bytewords.decode(Bytewords_Style_standard, encoded) == input)
+        assert(Bytewords.decode(Bytewords_Style_minimal, encoded_minimal) == input)
 
 
     def test_rng_1(self):
@@ -250,7 +269,7 @@ class TestUR(unittest.TestCase):
         assert(data_to_hex(data1) == "916ec65cf77cadf55cd7")
         data2 = rng.next_data(10)
         assert(data_to_hex(data2) == "f9cda1a1030026ddd42e")
-        data3 = data1.copy()
+        data3 = data1[:]
         xor_into(data3, data2)
         assert(data_to_hex(data3) == "68a367fdf47c8b2888f9")
         xor_into(data3, data1)
@@ -414,7 +433,58 @@ class TestUR(unittest.TestCase):
             assert(decoder.result == ur)
         else:
             print('{}'.format(decoder.result))
-            assert(false)
+            assert(False)
+
+    def run_tests(self):
+        try:
+            print('test 1')
+            self.test_crc32()
+            print('test 2')
+            self.test_bytewords_1()
+            print('test 3')
+            self.test_bytewords_2()
+            print('test 4')
+            self.test_rng_1()
+            print('test 5')
+            self.test_rng_2()
+            print('test 6')
+            self.test_rng_3()
+            print('test 7')
+            self.test_find_fragment_length()
+            print('test 8')
+            self.test_random_sampler()
+            print('test 9')
+            self.test_shuffle()
+            print('test 10')
+            self.test_partition_and_join()
+            print('test 11')
+            self.test_choose_degree()
+            print('test 12')
+            self.test_choose_fragments()
+            print('test 13')
+            self.test_xor()
+            print('test 14')
+            self.test_fountain_encoder()
+            print('test 15')
+            self.test_fountain_encoder_cbor()
+            print('test 16')
+            self.test_fountain_encoder_is_complete()
+            print('test 17')
+            self.test_fountain_decoder()
+            print('test 18')
+            self.test_fountain_cbor()
+            print('test 19')
+            self.test_single_part_ur()
+            print('test 20')
+            self.test_ur_encoder()
+            print('test 21')
+            self.test_multipart_ur()
+        except Exception as err:
+            import sys
+            print("Exception: {}".format(err))
+            sys.print_exception(err)
+        print("DONE!")
 
 if __name__ == '__main__':
-    unittest.main()
+    if unittest != None:
+        unittest.main()
