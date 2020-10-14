@@ -5,7 +5,7 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from utils import is_ur_type
+from .utils import is_ur_type
 
 class InvalidType(Exception):
     pass

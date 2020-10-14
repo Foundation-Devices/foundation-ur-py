@@ -6,10 +6,10 @@
 #
 
 import math
-from cbor_lite import CBORDecoder, CBOREncoder
-from fountain_utils import choose_fragments
-from utils import split, crc32_int, xor_into, data_to_hex
-from constants import MAX_UINT32, MAX_UINT64
+from .cbor_lite import CBORDecoder, CBOREncoder
+from .fountain_utils import choose_fragments
+from .utils import split, crc32_int, xor_into, data_to_hex
+from .constants import MAX_UINT32, MAX_UINT64
 
 class InvalidHeader(Exception):
     pass

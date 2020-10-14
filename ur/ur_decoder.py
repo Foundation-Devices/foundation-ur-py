@@ -5,11 +5,11 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from ur import UR
-from fountain_encoder import FountainEncoder, Part as FountainEncoderPart
-from fountain_decoder import FountainDecoder
-from bytewords import Bytewords
-from utils import drop_first, is_ur_type
+from .ur import UR
+from .fountain_encoder import FountainEncoder, Part as FountainEncoderPart
+from .fountain_decoder import FountainDecoder
+from .bytewords import *
+from .utils import drop_first, is_ur_type
 
 class InvalidScheme(Exception):
     pass
@@ -43,7 +43,7 @@ class URDecoder:
 
     @staticmethod
     def decode_by_type(type, body):
-        cbor = Bytewords.decode(Bytewords.Style.minimal, body)
+        cbor = Bytewords.decode(Bytewords_Style_minimal, body)
         return UR(type, cbor)
 
     @staticmethod
@@ -120,7 +120,7 @@ class URDecoder:
 
             # Parse the sequence component and the fragment, and make sure they agree.
             (seq_num, seq_len) = URDecoder.parse_sequence_component(seq)
-            cbor = Bytewords.decode(Bytewords.Style.minimal, fragment)
+            cbor = Bytewords.decode(Bytewords_Style_minimal, fragment)
             part = FountainEncoderPart.from_cbor(cbor)
             if seq_num != part.seq_num or seq_len != part.seq_len:
                 return False

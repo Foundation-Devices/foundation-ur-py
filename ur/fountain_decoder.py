@@ -5,8 +5,8 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-from fountain_utils import choose_fragments, contains, is_strict_subset, set_difference
-from utils import join_lists, join_bytes, crc32_int, xor_with, take_first
+from .fountain_utils import choose_fragments, contains, is_strict_subset, set_difference
+from .utils import join_lists, join_bytes, crc32_int, xor_with, take_first
 
 class InvalidPart(Exception):
     pass

@@ -5,54 +5,71 @@
 # Licensed under the "BSD-2-Clause Plus Patent License"
 #
 
-
-import unittest
+try:
+    import unittest
+except:
+    unittest = None
 
 from test_utils import make_message, make_message_ur
 
-from bytewords import Bytewords
-from utils import crc32_bytes, crc32_int, data_to_hex, bytes_to_int, string_to_bytes, xor_into
-from xoshiro256 import Xoshiro256
-from random_sampler import RandomSampler
-from fountain_utils import shuffled, choose_degree, choose_fragments
-from fountain_encoder import FountainEncoder, Part
-from fountain_decoder import FountainDecoder
-from ur_encoder import UREncoder
-from ur_decoder import URDecoder
+from ur.bytewords import *
+from ur.utils import crc32_bytes, crc32_int, data_to_hex, bytes_to_int, string_to_bytes, xor_into
+from ur.xoshiro256 import Xoshiro256
+from ur.random_sampler import RandomSampler
+from ur.fountain_utils import shuffled, choose_degree, choose_fragments
+from ur.fountain_encoder import FountainEncoder, Part
+from ur.fountain_decoder import FountainDecoder
+from ur.ur_encoder import UREncoder
+from ur.ur_decoder import URDecoder
 
 def check_crc32(input, expected_hex):
     checksum = crc32_int(bytes(input, 'utf8'))
     hex = '{:x}'.format(checksum)
     return hex == expected_hex
 
-class TestUR(unittest.TestCase):
+if unittest == None:
+    BaseClass = object
+else:
+    BaseClass = unittest.TestCase
+
+class TestUR(BaseClass):
+    def assertRaises(self, exc_type, func):
+        if unittest == None:
+            raised_exc = None
+            try:
+                func()
+            except exc_type as e:
+                raised_exc = e
+            if not raised_exc:
+                assert("{0} was not raised".format(exc_type))
+        else:
+            return super().assertRaises(exc_type, func)
+
     def test_crc32(self):
         assert check_crc32("Hello, world!", "ebe6c6e6")
         assert check_crc32("Wolf", "598c84dc")
 
     def test_bytewords_1(self):
         input = bytes([0, 1, 2, 128, 255])
-        assert(Bytewords.encode(Bytewords.Style.standard, input) == "able acid also lava zero jade need echo taxi")
-        assert(Bytewords.encode(Bytewords.Style.uri, input) == "able-acid-also-lava-zero-jade-need-echo-taxi")
-        assert(Bytewords.encode(Bytewords.Style.minimal, input) == "aeadaolazojendeoti")
+        assert(Bytewords.encode(Bytewords_Style_standard, input) == "able acid also lava zoom jade need echo taxi")
+        assert(Bytewords.encode(Bytewords_Style_uri, input) == "able-acid-also-lava-zoom-jade-need-echo-taxi")
+        assert(Bytewords.encode(Bytewords_Style_minimal, input) == "aeadaolazmjendeoti")
 
-        assert(Bytewords.decode(Bytewords.Style.standard, "able acid also lava zero jade need echo taxi") == input)
-        assert(Bytewords.decode(Bytewords.Style.uri, "able-acid-also-lava-zero-jade-need-echo-taxi") == input)
-        assert(Bytewords.decode(Bytewords.Style.minimal, "aeadaolazojendeoti") == input)
+        assert(Bytewords.decode(Bytewords_Style_standard, "able acid also lava zoom jade need echo taxi") == input)
+        assert(Bytewords.decode(Bytewords_Style_uri, "able-acid-also-lava-zoom-jade-need-echo-taxi") == input)
+        assert(Bytewords.decode(Bytewords_Style_minimal, "aeadaolazmjendeoti") == input)
 
         # bad checksum
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.standard, "able acid also lava zero jade need echo wolf")
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.uri, "able-acid-also-lava-zero-jade-need-echo-wolf")
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.minimal, "aeadaolazojendeowf")
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_standard, "able acid also lava zoom jade need echo wolf"))
+
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_uri, "able-acid-also-lava-zoom-jade-need-echo-wolf"))
+
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_minimal, "aeadaolazmjendeowf"))
 
         # too short
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.standard, "wolf")
-        with self.assertRaises(ValueError):
-            Bytewords.decode(Bytewords.Style.standard, "")
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_standard, "wolf"))
+        
+        self.assertRaises(ValueError, lambda: Bytewords.decode(Bytewords_Style_standard, ""))
 
     def test_bytewords_2(self):
         input = bytes([
@@ -70,29 +87,29 @@ class TestUR(unittest.TestCase):
 
         encoded = \
             "yank toys bulb skew when warm free fair tent swan " + \
-            "open brag mint noon jury lion view tiny brew note " + \
-            "body data webs what zone bald join runs data whiz " + \
-            "days keys user diet news ruby whiz zoom menu surf " + \
+            "open brag mint noon jury list view tiny brew note " + \
+            "body data webs what zinc bald join runs data whiz " + \
+            "days keys user diet news ruby whiz zone menu surf " + \
             "flew omit trip pose runs fund part even crux fern " + \
             "math visa tied loud redo silk curl jugs hard beta " + \
             "next cost puma drum acid junk swan free very mint " + \
-            "flap warm fact math flap what list free jugs yell " + \
+            "flap warm fact math flap what limp free jugs yell " + \
             "fish epic whiz open numb math city belt glow wave " + \
-            "list fuel grim free zoom open love diet gyro cats " + \
+            "limp fuel grim free zone open love diet gyro cats " + \
             "fizz holy city puff"
 
         encoded_minimal = \
-            "yktsbbswwnwmfefrttsnonbgmtnnjylnvwtybwne" + \
-            "bydawswtzebdjnrsdawzdsksurdtnsrywzzmmusf" + \
+            "yktsbbswwnwmfefrttsnonbgmtnnjyltvwtybwne" + \
+            "bydawswtzcbdjnrsdawzdsksurdtnsrywzzemusf" + \
             "fwottppersfdptencxfnmhvatdldroskcljshdba" + \
-            "ntctpadmadjksnfevymtfpwmftmhfpwtltfejsyl" + \
-            "fhecwzonnbmhcybtgwweltflgmfezmonledtgocs" + \
+            "ntctpadmadjksnfevymtfpwmftmhfpwtlpfejsyl" + \
+            "fhecwzonnbmhcybtgwwelpflgmfezeonledtgocs" + \
             "fzhycypf"
 
-        assert(Bytewords.encode(Bytewords.Style.standard, input) == encoded)
-        assert(Bytewords.encode(Bytewords.Style.minimal, input) == encoded_minimal)
-        assert(Bytewords.decode(Bytewords.Style.standard, encoded) == input)
-        assert(Bytewords.decode(Bytewords.Style.minimal, encoded_minimal) == input)
+        assert(Bytewords.encode(Bytewords_Style_standard, input) == encoded)
+        assert(Bytewords.encode(Bytewords_Style_minimal, input) == encoded_minimal)
+        assert(Bytewords.decode(Bytewords_Style_standard, encoded) == input)
+        assert(Bytewords.decode(Bytewords_Style_minimal, encoded_minimal) == input)
 
 
     def test_rng_1(self):
@@ -250,7 +267,7 @@ class TestUR(unittest.TestCase):
         assert(data_to_hex(data1) == "916ec65cf77cadf55cd7")
         data2 = rng.next_data(10)
         assert(data_to_hex(data2) == "f9cda1a1030026ddd42e")
-        data3 = data1.copy()
+        data3 = data1[:]
         xor_into(data3, data2)
         assert(data_to_hex(data3) == "68a367fdf47c8b2888f9")
         xor_into(data3, data1)
@@ -375,26 +392,26 @@ class TestUR(unittest.TestCase):
             parts.append(encoder.next_part())
 
         expected_parts = [
-            "ur:bytes/1-9/ltadascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtdkgsltgh",
-            "ur:bytes/2-9/ltaoascfadaxcywenbpljkhdcagwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsgmghhkhstlrdcxaefz",
-            "ur:bytes/3-9/ltaxascfadaxcywenbpljkhdcahelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjksopdzool",
-            "ur:bytes/4-9/ltaaascfadaxcywenbpljkhdcasotkhemthydawydtaxneurlkosgwcekonertkbrlwmplssjtammdplolsbrdzertas",
-            "ur:bytes/5-9/ltahascfadaxcywenbpljkhdcatbbdfmssrkzocwnezmlennjpfzbgmuktrhtejscktelgfpdlrkfyfwdajldejokbwf",
-            "ur:bytes/6-9/ltamascfadaxcywenbpljkhdcackjlhkhybssklbwefectpfnbbectrljectpavyrolkzezepkmwidmwoxkilghdsowp",
-            "ur:bytes/7-9/ltatascfadaxcywenbpljkhdcavszownjkwtclrtvaynhpahrtoxmwvwatmedibkaegdosftvandiodagdhthtrlnnhy",
-            "ur:bytes/8-9/ltayascfadaxcywenbpljkhdcadmsponkkbbhgsolnjntegepmttmoonftnbuoiyrehfrtsabzsttorodklubbuyaetk",
-            "ur:bytes/9-9/ltasascfadaxcywenbpljkhdcajskecpmdckihdyhphfotjojtfmlpwmadspaxrkytbztpbauotbgtgtaeaevtgavtny",
-            "ur:bytes/10-9/ltbkascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtwdkiplzs",
-            "ur:bytes/11-9/ltbdascfadaxcywenbpljkhdcahelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjkvetiiapk",
-            "ur:bytes/12-9/ltbnascfadaxcywenbpljkhdcarllaluzodmgstospeyiefmwejlwtpedamktksrvlcygmzmmovovllarodtmtbnptrs",
-            "ur:bytes/13-9/ltbtascfadaxcywenbpljkhdcamtkgtpknghchchyketwsvwgwfdhpgmgtylctotztpdrpayoschcmhplffziachrfgd",
-            "ur:bytes/14-9/ltbaascfadaxcywenbpljkhdcapazmwnvonnvdnsbyleynwtnsjkjndeoldydkbkdslgjkbbkortbelomueekgvstegt",
-            "ur:bytes/15-9/ltbsascfadaxcywenbpljkhdcaynmhpddpzoversbdqdfyrehnqzlugmjzmnmtwmrouohtstgsbsahpawkditkckynwt",
-            "ur:bytes/16-9/ltbeascfadaxcywenbpljkhdcawygekobamwtlihsnpalpsghenskkiynthdzttsimtojetprsttmukirlrsbtamjtpd",
-            "ur:bytes/17-9/ltbyascfadaxcywenbpljkhdcamklgftaxykpewyrtqzhydntpnytyisincxmhtbceaykolduortotiaiaiafhiaoyce",
-            "ur:bytes/18-9/ltbgascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtntwkbkwy",
-            "ur:bytes/19-9/ltbwascfadaxcywenbpljkhdcadekicpaajootjzpsdrbalteywllbdsnbinaerkurspbncxgslgftvtsrjtksplcpeo",
-            "ur:bytes/20-9/ltbbascfadaxcywenbpljkhdcayapmrleeleaxpasfrtrdkncffwjyjzgyetdmlewtkpktgllepfrltatazcksmhkbot"
+            "ur:bytes/1-9/lpadascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtdkgslpgh",
+            "ur:bytes/2-9/lpaoascfadaxcywenbpljkhdcagwdpfnsboxgwlbaawzuefywkdplrsrjynbvygabwjldapfcsgmghhkhstlrdcxaefz",
+            "ur:bytes/3-9/lpaxascfadaxcywenbpljkhdcahelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjksopdzmol",
+            "ur:bytes/4-9/lpaaascfadaxcywenbpljkhdcasotkhemthydawydtaxneurlkosgwcekonertkbrlwmplssjtammdplolsbrdzcrtas",
+            "ur:bytes/5-9/lpahascfadaxcywenbpljkhdcatbbdfmssrkzmcwnezelennjpfzbgmuktrhtejscktelgfpdlrkfyfwdajldejokbwf",
+            "ur:bytes/6-9/lpamascfadaxcywenbpljkhdcackjlhkhybssklbwefectpfnbbectrljectpavyrolkzczcpkmwidmwoxkilghdsowp",
+            "ur:bytes/7-9/lpatascfadaxcywenbpljkhdcavszmwnjkwtclrtvaynhpahrtoxmwvwatmedibkaegdosftvandiodagdhthtrlnnhy",
+            "ur:bytes/8-9/lpayascfadaxcywenbpljkhdcadmsponkkbbhgsoltjntegepmttmoonftnbuoiyrehfrtsabzsttorodklubbuyaetk",
+            "ur:bytes/9-9/lpasascfadaxcywenbpljkhdcajskecpmdckihdyhphfotjojtfmlnwmadspaxrkytbztpbauotbgtgtaeaevtgavtny",
+            "ur:bytes/10-9/lpbkascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtwdkiplzs",
+            "ur:bytes/11-9/lpbdascfadaxcywenbpljkhdcahelbknlkuejnbadmssfhfrdpsbiegecpasvssovlgeykssjykklronvsjkvetiiapk",
+            "ur:bytes/12-9/lpbnascfadaxcywenbpljkhdcarllaluzmdmgstospeyiefmwejlwtpedamktksrvlcygmzemovovllarodtmtbnptrs",
+            "ur:bytes/13-9/lpbtascfadaxcywenbpljkhdcamtkgtpknghchchyketwsvwgwfdhpgmgtylctotzopdrpayoschcmhplffziachrfgd",
+            "ur:bytes/14-9/lpbaascfadaxcywenbpljkhdcapazewnvonnvdnsbyleynwtnsjkjndeoldydkbkdslgjkbbkortbelomueekgvstegt",
+            "ur:bytes/15-9/lpbsascfadaxcywenbpljkhdcaynmhpddpzmversbdqdfyrehnqzlugmjzmnmtwmrouohtstgsbsahpawkditkckynwt",
+            "ur:bytes/16-9/lpbeascfadaxcywenbpljkhdcawygekobamwtlihsnpalnsghenskkiynthdzotsimtojetprsttmukirlrsbtamjtpd",
+            "ur:bytes/17-9/lpbyascfadaxcywenbpljkhdcamklgftaxykpewyrtqzhydntpnytyisincxmhtbceaykolduortotiaiaiafhiaoyce",
+            "ur:bytes/18-9/lpbgascfadaxcywenbpljkhdcahkadaemejtswhhylkepmykhhtsytsnoyoyaxaedsuttydmmhhpktpmsrjtntwkbkwy",
+            "ur:bytes/19-9/lpbwascfadaxcywenbpljkhdcadekicpaajootjzpsdrbalpeywllbdsnbinaerkurspbncxgslgftvtsrjtksplcpeo",
+            "ur:bytes/20-9/lpbbascfadaxcywenbpljkhdcayapmrleeleaxpasfrtrdkncffwjyjzgyetdmlewtkpktgllepfrltataztksmhkbot"
         ]
         assert(parts == expected_parts)
 
@@ -414,7 +431,58 @@ class TestUR(unittest.TestCase):
             assert(decoder.result == ur)
         else:
             print('{}'.format(decoder.result))
-            assert(false)
+            assert(False)
+
+    def run_tests(self):
+        try:
+            print('test_crc32()')
+            self.test_crc32()
+            print('test_bytewords_1()')
+            self.test_bytewords_1()
+            print('test_bytewords_2()')
+            self.test_bytewords_2()
+            print('test_rng_1()')
+            self.test_rng_1()
+            print('test_rng_2()')
+            self.test_rng_2()
+            print('test_rng_3()')
+            self.test_rng_3()
+            print('test_find_fragment_length()')
+            self.test_find_fragment_length()
+            print('test_random_sampler()')
+            self.test_random_sampler()
+            print('test_shuffle()')
+            self.test_shuffle()
+            print('test_partition_and_join()')
+            self.test_partition_and_join()
+            print('test_choose_degree()')
+            self.test_choose_degree()
+            print('test_choose_fragments()')
+            self.test_choose_fragments()
+            print('test_xor()')
+            self.test_xor()
+            print('test_fountain_encoder()')
+            self.test_fountain_encoder()
+            print('test_fountain_encoder_cbor()')
+            self.test_fountain_encoder_cbor()
+            print('test_fountain_encoder_is_complete()')
+            self.test_fountain_encoder_is_complete()
+            print('test_fountain_decoder()')
+            self.test_fountain_decoder()
+            print('test_fountain_cbor()')
+            self.test_fountain_cbor()
+            print('test_single_part_ur()')
+            self.test_single_part_ur()
+            print('test_ur_encoder()')
+            self.test_ur_encoder()
+            print('test_multipart_ur()')
+            self.test_multipart_ur()
+        except Exception as err:
+            import sys
+            print("Exception: {}".format(err))
+            sys.print_exception(err)
+        print("Testing Complete.")
 
 if __name__ == '__main__':
-    unittest.main()
+    if unittest != None:
+        unittest.main()

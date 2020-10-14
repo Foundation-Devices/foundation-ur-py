@@ -44,7 +44,7 @@ Either `hashlib` in a normal Python environment or `uhashlib` in MicroPython mus
             assert(decoder.result == ur)
         else:
             print('{}'.format(decoder.result))
-            assert(false)
+            assert(False)
     ```
 
 ## Notes for Maintainers
