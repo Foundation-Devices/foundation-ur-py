@@ -22,8 +22,8 @@ Either `hashlib` in a normal Python environment or `uhashlib` in MicroPython mus
 
 2. Import the encoder and decoder:
     ```
-    from ur_encoder import UREncoder
-    from ur_decoder import URDecoder
+    from ur.ur_encoder import UREncoder
+    from ur.ur_decoder import URDecoder
     ```
 
 3. Write some test code:
