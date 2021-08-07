@@ -33,4 +33,4 @@ def crc32(buf):
 
 def crc32n(buf):
     n = crc32(buf)
-    return n.to_bytes((bit_length(n) + 7) // 8, 'big')
+    return n.to_bytes(4, 'big')

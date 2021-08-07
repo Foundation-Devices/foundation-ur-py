@@ -384,6 +384,14 @@ class TestUR(BaseClass):
         decoded = URDecoder.decode(encoded)
         assert(ur == decoded)
 
+    # Added this test to check GitHub issue #3
+    def test_short_crc32(self):
+        fragment = "ur:crypto-psbt/20-29/lpbbcscacfcmcpcybbrsptskhdssdtsbtkdechrhpkhkvwmdmnksgdaoaeaeaeaeaechptbbeodkpletlbldamjopmbnpeplwmfzltzthgoeqzteltlgaychaeaeaeaeaechptbbfxsawkidltenbskpjlfeflmnclpkemtpwpmhmhioltkecsamaeaeaeaeaechptbbintkmwzmynknkezcbgkthdfezopaynprmefthpkgltaeaeaeaeadaddnemmdaaaeaeaeaeaecpaecxhdgwfdvtsphdolbnkigeteeclkosoxlpjssnfxsgclahesjsvturdyjzcwsrkndtadahtkghclaofstdlnuysaasiesfdnrkhsmnjztonlpsldwftdmninoxehhnkotodrwpchrorhdaclaeetwdvl"
+
+        decoder = URDecoder()
+        status = decoder.receive_part(fragment)
+        assert(status)
+
     def test_ur_encoder(self):
         ur = make_message_ur(256)
         encoder = UREncoder(ur, 30)
