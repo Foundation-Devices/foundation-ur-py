@@ -10,7 +10,9 @@ There is also another reference implementation in Swift: [URKit](https://github.
 
 ## Installation
 
-The code is not yet available in a package format, so just copy the files into your project.
+1. Clone the repository.
+2. `cd foundation-ur-py`
+3. `pip3 install .`
 
 ### Dependencies
 
@@ -18,15 +20,13 @@ Either `hashlib` in a normal Python environment or `uhashlib` in MicroPython mus
 
 ## Use
 
-1. Include the source folder in your Python project
-
-2. Import the encoder and decoder:
+1. Import the encoder and decoder:
     ```
     from ur.ur_encoder import UREncoder
     from ur.ur_decoder import URDecoder
     ```
 
-3. Write some test code:
+2. Write some test code:
 
     ```
         ur = make_message_ur(32767)
