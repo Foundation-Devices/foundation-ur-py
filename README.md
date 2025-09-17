@@ -1,3 +1,14 @@
+# THIS REPO IS NO LONGER MAINTAINED. Passport Core and Passport Prime now uses the following Rust based libraries:
+
+- https://docs.rs/foundation-ur
+- https://docs.rs/foundation-urtypes
+
+
+***
+
+
+
+
 # [Foundation Devices Python UR Library](https://github.com/Foundation-Devices/foundation-ur-py)
 
 **UR Implementation in Python -- ported from the [C++ Reference Implementation by Blockchain Commons](https://github.com/BlockchainCommons/bc-ur)**
