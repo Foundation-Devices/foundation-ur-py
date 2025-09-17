@@ -1,4 +1,4 @@
-# THIS REPO IS NO LONGER MAINTAINED. Passport Core and Passport Prime now uses the following Rust based libraries:
+# THIS REPO IS NO LONGER MAINTAINED. Passport Core and Passport Prime now use the following Rust based libraries:
 
 - https://docs.rs/foundation-ur
 - https://docs.rs/foundation-urtypes
